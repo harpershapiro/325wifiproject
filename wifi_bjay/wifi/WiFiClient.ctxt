@@ -1,0 +1,25 @@
+#BlueJ class context
+comment0.target=WiFiClient
+comment0.text=\n\ The\ WiFiClient\ class\ provides\ a\ GUI\ for\ interacting\ with\ 802.11~\ implementations.\ \ It\n\ can\ be\ used\ to\ drive\ either\ Java-based\ or\ C++-based\ link\ layers.\ \ (Use\ a\ CppGUIAdapter\n\ to\ interface\ this\ with\ C++\ code,\ and\ a\ JavaGUIAdapter\ to\ drive\ Java\ code.)\n\ Care\ is\ taken\ to\ ensure\ that\ all\ GUI-servicing\ operations\ occur\ in\ the\ event-dispatching\n\ thread\ while\ all\ interactions\ with\ 802.11~\ code\ occur\ in\ separate\ threads.\ \ Thus\ the\n\ constructor\ doesn't\ actually\ create\ the\ GUI\ &mdash;\ that\ happens\ in\ buildGUI()\ which\ is\n\ called\ from\ the\ client's\ run()\ method.\ \ (The\ run()\ method\ also\ starts\ up\ a\ thread\ to\ \n\ watch\ for\ arriving\ packets\ from\ the\ 802.11~\ layer.)\ \ The\ client's\ run\ method\ is\ invoked\ \n\ by\ main\ via\ SwingUtilities.invokeAndWait()\ to\ ensure\ it's\ executed\ on\ the\ event-dispatching\ \n\ thread.\n\ \n\ A\ complete\ Java\ implementation\ looks\ like\:\n\ <blockquote><pre>\n\ WiFiClient\n\ JavaGUIAdapter\n\ LinkLayer\ (802.11~\ implementation)\n\ RF\n\ </pre></blockquote>\n\ \n\ A\ complete\ C++\ implementation\ is\ messier,\ due\ to\ the\ need\ for\ additional\ layers\ to\ \n\ mediate\ between\ the\ Java\ and\ C++\ code\:\n\ <blockquote><pre>\n\ WiFiClient\ (Java)\n\ CppGUIAdapter\ (Java)\n\ cppStubs\ (C++)\n\ linklayer\ (802.11~\ implementation\ in\ C++)\n\ RF\ (C++\ JNI\ layer)\n\ RF\ (Java\ implementation\ of\ RF\ layer)\n\ </pre></blockquote>\n\ \n\ See\ the\ project\ documentation\ for\ additional\ information\ on\ compiling\ an\ 802.11~\ project.\n\ \n\ @author\ Brad\ Richards\n\ @version\ 1.2\n\n
+comment1.params=MACaddr\ theLinkLayer
+comment1.target=WiFiClient(short,\ GUIClientInterface)
+comment1.text=\n\ The\ constructor\ builds\ the\ GUI\ and\ prepares\ it\ for\ use.\n
+comment2.params=
+comment2.target=void\ buildGUI()
+comment2.text=\n\ Creates\ all\ of\ the\ GUI\ components\ and\ registers\ the\ event\ handlers.\n\ This\ method\ should\ be\ invoked\ on\ the\ event-dispatching\ thread.\n
+comment3.params=e
+comment3.target=void\ actionPerformed(java.awt.event.ActionEvent)
+comment3.text=\ \n\ Handler\ for\ button-press\ events.\ \ Users\ should\ never\ need\ to\ call\n\ this\ directly.\n
+comment4.params=msg
+comment4.target=void\ addText(java.lang.String)
+comment4.text=\n\ Call\ this\ to\ append\ text\ to\ the\ scrolling\ output\ pane.\ \ No\ newlines\ are\ added,\n\ so\ be\ sure\ to\ include\ a\ "\\n"\ where\ desired.\ \ Text\ is\ collected\ in\ a\ StringBuffer\n\ (outputText)\ as\ well\ as\ the\ JTextArea\ (display).\ \ This\ allows\ us\ to\ continue\ \n\ buffering\ text\ even\ when\ the\ window\ output\ is\ paused.\n\ \n\ @param\ msg\ \ Text\ to\ add\ to\ the\ scrolling\ pane\n
+comment5.params=
+comment5.target=void\ saveToFile()
+comment5.text=\n\ Prompts\ user\ to\ select\ an\ output\ file,\ then\ writes\ all\ text\ from\ the\n\ scrolling\ pane\ to\ the\ file.\n
+comment6.params=
+comment6.target=void\ run()
+comment6.text=\n\ The\ run\ method\ should\ be\ executed\ by\ the\ event-dispatching\ thread.\ \ it\ creates\n\ the\ GUI\ and\ starts\ a\ thread\ to\ watch\ for\ packets\ arriving\ for\ this\ station.\n
+comment7.params=args
+comment7.target=void\ main(java.lang.String[])
+comment7.text=\n\ The\ main\ method\ selects\ a\ MAC\ address,\ creates\ a\ WiFiClient\ GUI\ and\ associates\n\ it\ with\ the\ link\ layer\ implementation,\ then\ waits\ in\ an\ infinite\ loop\ watching\n\ for\ stream\ output\ from\ the\ link\ layer\ and\ routing\ into\ the\ GUI\ display.\n
+numComments=8

@@ -1,0 +1,19 @@
+#BlueJ class context
+comment0.target=LinkLayer
+comment0.text=\n\ Use\ this\ layer\ as\ a\ starting\ point\ for\ your\ project\ code.\ \ See\ {@link\ Dot11Interface}\ for\ more\n\ details\ on\ these\ routines.\n\ @author\ richards\n
+comment1.params=ourMAC\ output
+comment1.target=LinkLayer(short,\ java.io.PrintWriter)
+comment1.text=\n\ Constructor\ takes\ a\ MAC\ address\ and\ the\ PrintWriter\ to\ which\ our\ output\ will\n\ be\ written.\n\ @param\ ourMAC\ \ MAC\ address\n\ @param\ output\ \ Output\ stream\ associated\ with\ GUI\n
+comment2.params=dest\ data\ len
+comment2.target=int\ send(short,\ byte[],\ int)
+comment2.text=\n\ Send\ method\ takes\ a\ destination,\ a\ buffer\ (array)\ of\ data,\ and\ the\ number\n\ of\ bytes\ to\ send.\ \ See\ docs\ for\ full\ description.\n
+comment3.params=t
+comment3.target=int\ recv(Transmission)
+comment3.text=\n\ Recv\ method\ blocks\ until\ data\ arrives,\ then\ writes\ it\ an\ address\ info\ into\n\ the\ Transmission\ object.\ \ See\ docs\ for\ full\ description.\n
+comment4.params=
+comment4.target=int\ status()
+comment4.text=\n\ Returns\ a\ current\ status\ code.\ \ See\ docs\ for\ full\ description.\n
+comment5.params=cmd\ val
+comment5.target=int\ command(int,\ int)
+comment5.text=\n\ Passes\ command\ info\ to\ your\ link\ layer.\ \ See\ docs\ for\ full\ description.\n
+numComments=6

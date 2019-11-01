@@ -1,0 +1,25 @@
+#BlueJ class context
+comment0.target=Transmission
+comment0.text=\n\ This\ class\ contains\ the\ information\ available\ from\ an\ incoming\ transmission.\ \ In\ C,\ the\n\ recvfrom()\ call\ returns\ information\ about\ the\ source\ and\ destination\ address\ through\n\ parameters\ to\ the\ call,\ along\ with\ the\ incoming\ data\ itself.\ \ We\ can't\ do\ that\ in\ Java,\n\ so\ we'll\ use\ the\ same\ approach\ that\ the\ Java\ sockets\ libraries\ do\:\ \ Our\ recv()\ call\ will\n\ take\ an\ object\ reference\ &mdash;\ a\ pointer\ to\ a\ Transmission\ instance\ &mdash;\ and\ will\n\ write\ the\ data\ and\ address\ information\ into\ the\ Transmission\ object.\n\ \n\ @author\ richards\n
+comment1.params=sourceAddr\ destAddr\ buf
+comment1.target=Transmission(short,\ short,\ byte[])
+comment1.text=\n\ Constructor\ for\ Transmission.\n\ @param\ sourceAddr\ \ The\ transmission's\ source\ address\n\ @param\ destAddr\ \ \ \ The\ transmission's\ destination\ address\n\ @param\ buf\ \ \ \ \ \ \ \ \ The\ data\ carried\ by\ the\ transmission\n
+comment2.params=
+comment2.target=byte[]\ getBuf()
+comment2.text=\n\ Returns\ a\ reference\ to\ the\ buffer\ held\ by\ the\ Transmission\ instance.\ \ Note\ that\n\ it\ does\ <i>not</i>\ return\ a\ copy\ of\ the\ buffer,\ it\ returns\ a\ link\ to\ the\ existing\n\ buffer.\n\ @return\ a\ reference\ to\ the\ data\ buffer\n
+comment3.params=buf
+comment3.target=void\ setBuf(byte[])
+comment3.text=\n\ Takes\ a\ reference\ to\ an\ array\ of\ bytes\ and\ sets\ it\ to\ be\ the\ buffer\ used\ by\ the\n\ Transmission\ instance.\ \ Note\ that\ it\ does\ <i>not</i>\ copy\ <code>buf</code>,\ it\n\ links\ to\ it\ (shares\ it).\n\ @param\ buf\ the\ data\ buffer\ to\ set\n
+comment4.params=
+comment4.target=short\ getDestAddr()
+comment4.text=\n\ @return\ the\ destination\ address\n
+comment5.params=destAddr
+comment5.target=void\ setDestAddr(short)
+comment5.text=\n\ @param\ destAddr\ the\ destination\ address\ to\ set\n
+comment6.params=
+comment6.target=short\ getSourceAddr()
+comment6.text=\n\ @return\ the\ source\ address\n
+comment7.params=sourceAddr
+comment7.target=void\ setSourceAddr(short)
+comment7.text=\n\ @param\ sourceAddr\ the\ source\ address\ to\ set\n
+numComments=8
