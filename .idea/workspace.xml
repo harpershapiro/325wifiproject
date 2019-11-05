@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="eea71dda-11db-4de0-b936-f8ff0e6cd970" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Packet.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Packet.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -32,12 +31,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="1234" />
+          <entry key="java" value="2134" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="1234" />
+          <entry key="JAVA" value="2134" />
         </counts>
       </usages-collector>
     </session>
@@ -56,11 +55,9 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/Packet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="411">
-              <caret line="114" column="35" selection-start-line="114" selection-start-column="35" selection-end-line="114" selection-end-column="35" />
+            <state relative-caret-position="478">
+              <caret line="129" column="73" selection-start-line="129" selection-start-column="73" selection-end-line="129" selection-end-column="73" />
               <folding>
-                <element signature="e#1382#1383#0" expanded="true" />
-                <element signature="e#1411#1412#0" expanded="true" />
                 <element signature="e#1560#1561#0" expanded="true" />
                 <element signature="e#1589#1590#0" expanded="true" />
                 <element signature="e#1729#1730#0" expanded="true" />
@@ -104,9 +101,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="772" />
-    <option name="width" value="1155" />
-    <option name="height" value="1047" />
+    <option name="x" value="952" />
+    <option name="y" value="-8" />
+    <option name="width" value="976" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -140,7 +138,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1572929494038" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1572937661715" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -177,7 +175,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="772" y="0" width="1155" height="1047" extended-state="0" />
+    <frame x="952" y="-8" width="976" height="1056" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Image Layers" />
@@ -185,7 +183,7 @@
       <window_info id="UI Designer" />
       <window_info id="Capture Tool" />
       <window_info id="Favorites" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.089497715" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1069869" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Version Control" />
       <window_info anchor="bottom" id="Terminal" />
@@ -193,7 +191,7 @@
       <window_info anchor="bottom" id="Messages" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32968238" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.318872" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -235,11 +233,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/Packet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="411">
-          <caret line="114" column="35" selection-start-line="114" selection-start-column="35" selection-end-line="114" selection-end-column="35" />
+        <state relative-caret-position="478">
+          <caret line="129" column="73" selection-start-line="129" selection-start-column="73" selection-end-line="129" selection-end-column="73" />
           <folding>
-            <element signature="e#1382#1383#0" expanded="true" />
-            <element signature="e#1411#1412#0" expanded="true" />
             <element signature="e#1560#1561#0" expanded="true" />
             <element signature="e#1589#1590#0" expanded="true" />
             <element signature="e#1729#1730#0" expanded="true" />

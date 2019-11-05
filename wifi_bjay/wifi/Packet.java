@@ -37,12 +37,21 @@ public class Packet {
     ////////////ADD ALL SETTERS AND GETTERS!///////////////////////////////////////////////
 
     /**
-     * Creates a transmittable frame from the packet object.
-     * @return
+     * Creates a transmittable byte array from the packet object.
+     * @return the byte array version of this packet
      */
     public byte[] getFrame(){
+        //create new frame array of proper size
         int frameLen = NON_DATA_BYTES+len;
-        return null;
+        byte[] frame = new byte[frameLen];
+
+        //fill in the fields
+        frame = fillControl(frame);
+        frame = fillAddresses(frame);
+        frame = fillData(frame);
+        frame = fillCheckSum(frame);
+
+        return frame;
     }
 
     /**
@@ -51,6 +60,11 @@ public class Packet {
      * @return
      */
     private byte[] fillControl(byte[] packet){
+        //do some shifting and combining to get full control sequence (max 2 bytes)
+        int control = (((frameType<<1)|retry)<<12)|seqNum;
+        //fill in frame
+        packet[0] = (byte)(control>>8);
+        packet[1] = (byte)(control);
         return packet;
     }
 
@@ -110,9 +124,11 @@ public class Packet {
 
     public static void main(String[] args){
         byte[] data = {1,2,3,4,5,6};
-        Packet packet = new Packet(0,0,0,200,100,data,data.length);
+        Packet packet = new Packet(5,1,0,200,100,data,data.length);
         System.out.println(packet);
-        System.out.println(packet);
+        byte[] frame = packet.getFrame();
+        System.out.println("Byte 1: " + Integer.toBinaryString(frame[0]));
+        System.out.println("Byte 2: " + Integer.toBinaryString(frame[1]));
     }
 
 }
