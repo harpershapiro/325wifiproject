@@ -2,6 +2,8 @@ package wifi;
 import java.util.zip.CRC32;
 
 public class Packet {
+    public static final int NUM_CONTROL_BYTES = 2, DEST_ADDR_BYTES=2, SRC_ADDR_BYTES=2, CRC_BYTES=4;
+    public static final int NON_DATA_BYTES = NUM_CONTROL_BYTES+DEST_ADDR_BYTES+SRC_ADDR_BYTES+CRC_BYTES;
     private int frameType;
     private int retry;
     private int seqNum;
@@ -39,7 +41,44 @@ public class Packet {
      * @return
      */
     public byte[] getFrame(){
+        int frameLen = NON_DATA_BYTES+len;
         return null;
+    }
+
+    /**
+     * Fills the control field of the frame
+     * @param packet
+     * @return
+     */
+    private byte[] fillControl(byte[] packet){
+        return packet;
+    }
+
+    /**
+     * Fills the address fields of the frame
+     * @param packet
+     * @return
+     */
+    private byte[] fillAddresses(byte[] packet){
+        return packet;
+    }
+
+    /**
+     * Fills data field of the frame
+     * @param packet
+     * @return
+     */
+    private byte[] fillData(byte[] packet){
+        return packet;
+    }
+
+    /**
+     * Fills the checksum field of the frame
+     * @param packet
+     * @return
+     */
+    private byte[] fillCheckSum(byte[] packet){
+        return packet;
     }
 
     private long getCheckSum(){
@@ -55,12 +94,25 @@ public class Packet {
         return null;
     }
 
+    @Override
+    public String toString(){
+        StringBuilder build = new StringBuilder();
+        build.append("--------------------\nFrame Type: " + frameType + "\n");
+        build.append("Retry: " + retry + "\n");
+        build.append("Sequence Number: " + seqNum + "\n");
+        build.append("Destination: " + dest + "\n");
+        build.append("Source: " + src + "\n");
+        build.append("Checksum: " + checkSum.getValue() + "\n--------------------");
+        return build.toString();
+    }
 
 
 
-
-
-
-
+    public static void main(String[] args){
+        byte[] data = {1,2,3,4,5,6};
+        Packet packet = new Packet(0,0,0,200,100,data,data.length);
+        System.out.println(packet);
+        System.out.println(packet);
+    }
 
 }

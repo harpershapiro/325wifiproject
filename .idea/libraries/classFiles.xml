@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="classFiles">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/wifi_bjay/+libs/classFiles.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
