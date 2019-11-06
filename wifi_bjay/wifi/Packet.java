@@ -56,43 +56,48 @@ public class Packet {
 
     /**
      * Fills the control field of the frame
-     * @param packet
-     * @return
+     * @param frame frame with missing control-bits field
+     * @return filled frame
      */
-    private byte[] fillControl(byte[] packet){
+    private byte[] fillControl(byte[] frame){
         //do some shifting and combining to get full control sequence (max 2 bytes)
         int control = (((frameType<<1)|retry)<<12)|seqNum;
         //fill in frame
-        packet[0] = (byte)(control>>8);
-        packet[1] = (byte)(control);
-        return packet;
+        frame[0] = (byte)(control>>8);
+        frame[1] = (byte)(control);
+        return frame;
     }
 
     /**
      * Fills the address fields of the frame
-     * @param packet
+     * @param frame
      * @return
      */
-    private byte[] fillAddresses(byte[] packet){
-        return packet;
+    private byte[] fillAddresses(byte[] frame){
+        //shift both addresses to place into bytes 3-6 in frame
+        frame[2] = (byte)((dest>>8));
+        frame[3] = (byte)dest;
+        frame[4] = (byte)((src>>8));
+        frame[5] = (byte)src;
+        return frame;
     }
 
     /**
      * Fills data field of the frame
-     * @param packet
+     * @param frame
      * @return
      */
-    private byte[] fillData(byte[] packet){
-        return packet;
+    private byte[] fillData(byte[] frame){
+        return frame;
     }
 
     /**
      * Fills the checksum field of the frame
-     * @param packet
+     * @param frame
      * @return
      */
-    private byte[] fillCheckSum(byte[] packet){
-        return packet;
+    private byte[] fillCheckSum(byte[] frame){
+        return frame;
     }
 
     private long getCheckSum(){
@@ -127,8 +132,8 @@ public class Packet {
         Packet packet = new Packet(5,1,0,200,100,data,data.length);
         System.out.println(packet);
         byte[] frame = packet.getFrame();
-        System.out.println("Byte 1: " + Integer.toBinaryString(frame[0]));
-        System.out.println("Byte 2: " + Integer.toBinaryString(frame[1]));
+        System.out.println("Byte 3: " + Integer.toBinaryString(frame[2]));
+        System.out.println("Byte 4: " + Integer.toBinaryString(frame[3]));
     }
 
 }
