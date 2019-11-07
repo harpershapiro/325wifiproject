@@ -1,4 +1,6 @@
 package wifi;
+import static java.lang.Thread.sleep;
+
 
 public class Sender implements Runnable {
     private int mac;
@@ -13,6 +15,15 @@ public class Sender implements Runnable {
 
     @Override
     public void run(){
+        //testing thread
+        while(true) {
+            System.out.println("Sender thread running.");
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         //Wait for something to arrive on the outgoing data queue
         //Data arrives:
             //Make packet

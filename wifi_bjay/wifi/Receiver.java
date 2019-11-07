@@ -1,5 +1,7 @@
 package wifi;
 import rf.RF;
+import static java.lang.Thread.sleep;
+
 
 
 public class Receiver implements Runnable {
@@ -13,10 +15,7 @@ public class Receiver implements Runnable {
 
     }
 
-    @Override
-    public void run(){
-        getData();
-    }
+
 
     /**
      * Waits for a packet and once it gets one check the CRC, if CRC passed then return the packet and maybe start ack process
@@ -66,6 +65,20 @@ public class Receiver implements Runnable {
 
     public void setCRC(byte[] pck) {
         //this.crc = crc; //todo: properly get the crc from packet (last 4 bytes) //not within scope of CP#2
+    }
+
+    @Override
+    public void run(){
+        //getData();
+        //testing thread
+        while(true) {
+            System.out.println("Receiver thread running.");
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted.");
+            }
+        }
     }
 
 }
