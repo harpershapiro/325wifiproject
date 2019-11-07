@@ -15,9 +15,9 @@ public class LinkLayer implements Dot11Interface
 	private RF theRF;           // You'll need one of these eventually
 	private short ourMAC;       // Our MAC address
 	private PrintWriter output; // The output stream we'll write to
-	ArrayBlockingQueue<byte[]> dataOutgoing = new ArrayBlockingQueue<byte[]>(QUEUE_CAPACITY);
-	ArrayBlockingQueue<byte[]> dataIncoming = new ArrayBlockingQueue<byte[]>(QUEUE_CAPACITY);
-
+    //queues for transmitting
+	ArrayBlockingQueue<Transmission> dataOutgoing = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
+	ArrayBlockingQueue<Transmission> dataIncoming = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 
 
 
