@@ -6,11 +6,14 @@ public class Sender implements Runnable {
     private int mac;
     private boolean retry; //true if we are resending current packet
     private boolean fullyIdle; //true if we have never seen the channel busy during this transmission
+    private String state;
+
 
     public Sender(int mac){
         this.mac = mac;
         this.retry = false;
         this.fullyIdle = false;
+        this.state = "waiting4data"; //when thread is called start at waiting4data to start
     }
 
     @Override
@@ -35,7 +38,7 @@ public class Sender implements Runnable {
                     //wait DIFS
                     //channel still idle:
                         //wait exponential backoff time
-                        //channel interupted:
+                        //channel interrupted:
                             //save exponential timer state
                             //go back to wait DIFS step
                         //exponential timer finished:
@@ -65,6 +68,41 @@ public class Sender implements Runnable {
                         //up contention window
                         //set retry to true
                         //go back to beginning, new packet out of same data from before
-    }
 
+        // switch statement using above comment as reference
+        switch (state) {
+            case "waiting4data":
+                //wait until incoming data, once data comes check if idle or not and update state
+                //is idle set state to idle
+                //not idle set state to !idle
+                break;
+            case "idle":
+                //wait DFS then see if fullyIdle == true
+                //then transmit packet set state to waiting4ack
+                //else wait exponential backoff time
+                    //channel interrupted:
+                    //save exponential timer state
+                    //set state to !idle state again and loop
+                break;
+            case "!idle":
+                //wait until idle but also set fullyIdle = false
+                //then set state to idle
+                break;
+            case "waiting4ack":
+                //ack received:
+                    //set fully idle to false
+                    //go back to beginning
+                //ack not received in time:
+                    //up contention window
+                    //set retry to true
+                    //go back to beginning, new packet out of same data from before
+                break;
+            case "transmit":
+                //transmit frame
+                //set state to waiting4ack
+                break;
+        }
+        System.out.println(state);
+    }
 }
+
