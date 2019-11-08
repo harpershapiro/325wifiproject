@@ -75,8 +75,9 @@ public class Receiver implements Runnable {
         while(true) {
 
 //            System.out.println("Receiver thread running.");
-            System.out.println("RECV rec_pck: "+ rec_pck);
+            System.out.println("RECV Waiting for packets");
             rec_pck = theRF.receive();
+            //todo: not within scope of CP#2 but its helpful, grab the info out of the packet like dest,src,data and the crc
             System.out.println("RECV rec_pck: "+ rec_pck);
 //            try {
 //

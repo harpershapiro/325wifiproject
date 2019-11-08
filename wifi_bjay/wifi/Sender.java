@@ -25,9 +25,7 @@ public class Sender implements Runnable {
 
     @Override
     public void run(){
-
         //testing thread
-
         while(true) {
             System.out.println("Sender thread running.");
             try {
@@ -35,8 +33,10 @@ public class Sender implements Runnable {
                 byte[] bytedata = data.getBuf();
                 Packet pck = new Packet(000,0,0,data.getDestAddr(),data.getSourceAddr(),bytedata,bytedata.length);
                 System.out.println("have created a packet pck : "+ pck);
+                //todo: check if idle before transmit and only send once it is Idle (is WITHIN scope of CP#2)
+                //todo: also input a correct CRC into packet (probably using CRC32())
                 theRF.transmit(pck.getFrame());
-                System.out.println("have Transmited the PCK");
+                System.out.println("have Transmitted the PCK");
                 //sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
