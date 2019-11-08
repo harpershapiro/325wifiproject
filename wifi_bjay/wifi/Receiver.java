@@ -10,8 +10,9 @@ public class Receiver implements Runnable {
     private byte[] rec_pck; //Place holder for when we rec packet we can store it
     private RF theRF;       //You'll need one of these eventually
 
-    public Receiver(int mac){
+    public Receiver(int mac,rf.RF theRF){
         this.mac = mac;
+        this.theRF = theRF;
 
     }
 
@@ -47,7 +48,7 @@ public class Receiver implements Runnable {
         }
         //todo: Does the header info count twords the checkSum total or just the data length? //not within scope of CP#2 tho
         //if above is true then //todo: bitwise shift header and crc out from packet and keep data
-        // shift 6 (or 48 in bits?) to the left to remove header. then shift 4 (32? bits) to the right to remove CRC
+        // shift 6 (or 48 in bits?) to the left to remove header. then shift 10 (32? bits) to the right to remove CRC
         int pckLength = pck.length; //get the length of data inside of the packet (we - 10 because those are extra header bytes)
         int index = 0;
         long calcCRC = 0;
@@ -72,12 +73,17 @@ public class Receiver implements Runnable {
         //getData();
         //testing thread
         while(true) {
-            System.out.println("Receiver thread running.");
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                System.out.println("Interrupted.");
-            }
+
+//            System.out.println("Receiver thread running.");
+            System.out.println("RECV rec_pck: "+ rec_pck);
+            rec_pck = theRF.receive();
+            System.out.println("RECV rec_pck: "+ rec_pck);
+//            try {
+//
+//                sleep(1000);
+//            } catch (InterruptedException e) {
+//                System.out.println("Interrupted.");
+//            }
         }
     }
 

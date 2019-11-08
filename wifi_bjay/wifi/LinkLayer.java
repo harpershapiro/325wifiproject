@@ -1,5 +1,6 @@
 package wifi;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import rf.RF;
@@ -20,7 +21,6 @@ public class LinkLayer implements Dot11Interface
 	ArrayBlockingQueue<Transmission> dataIncoming = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 
 
-
 	/**
 	 * Constructor takes a MAC address and the PrintWriter to which our output will
 	 * be written.
@@ -32,8 +32,8 @@ public class LinkLayer implements Dot11Interface
 		this.output = output;
 		theRF = new RF(null, null);
 		//TODO: start sender and receiver threads
-		Sender send = new Sender(ourMAC);
-		Receiver receive = new Receiver(ourMAC);
+		Sender send = new Sender(ourMAC,dataOutgoing,theRF);
+		Receiver receive = new Receiver(ourMAC,theRF);
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
 		output.println("LinkLayer: Constructor ran.");
@@ -45,7 +45,10 @@ public class LinkLayer implements Dot11Interface
 	 */
 	public int send(short dest, byte[] data, int len) {
 		output.println("LinkLayer: Sending "+len+" bytes to "+dest);
-		theRF.transmit(data);
+		byte[] splitArr = Arrays.copyOfRange(data,0,len);
+		//theRF.transmit(data); //inside sender now
+		dataOutgoing.add(new Transmission(ourMAC,dest,splitArr));
+		System.out.println("Have added to dataIncoming Queue");
 		return len;
 	}
 

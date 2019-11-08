@@ -4,7 +4,13 @@
     <list default="true" id="b2568058-102d-4382-9556-4f9b0479d1d2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/package.bluej" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/package.bluej" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/package.bluej" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/package.bluej" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -37,14 +43,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Unnamed (1)">
-    <configuration name="Unnamed (1)" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="wifi.WiFiClient" />
-      <module name="325wifiproject" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
+  <component name="RunManager" selected="Compound.multi run test">
     <configuration name="Unnamed" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="wifi.Packet" />
       <module name="325wifiproject" />
@@ -52,9 +51,35 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="WIFI client 2" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="wifi.WiFiClient" />
+      <module name="325wifiproject" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="WIFI client" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="wifi.WiFiClient" />
+      <module name="325wifiproject" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CompoundRunConfigurationType">
+      <toRun name="WIFI client" type="Application" />
+      <toRun name="WIFI client 2" type="Application" />
+      <method v="2" />
+    </configuration>
+    <configuration name="multi run test" type="CompoundRunConfigurationType">
+      <toRun name="WIFI client" type="Application" />
+      <toRun name="WIFI client 2" type="Application" />
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Application.WIFI client 2" />
       <item itemvalue="Application.Unnamed" />
-      <item itemvalue="Application.Unnamed (1)" />
+      <item itemvalue="Application.WIFI client" />
+      <item itemvalue="Compound.multi run test" />
     </list>
   </component>
   <component name="SvnConfiguration">
