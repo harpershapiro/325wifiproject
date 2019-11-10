@@ -34,7 +34,7 @@ public class Packet {
     public void setFrameType(int frameType){
         this.frameType = frameType;
     }
-    ////////////ADD ALL SETTERS AND GETTERS!///////////////////////////////////////////////
+    ////////////ADD ALL SETTERS AND GETTERS?///////////////////////////////////////////////
 
     /**
      * Creates a transmittable byte array from the packet object.
