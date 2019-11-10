@@ -5,6 +5,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import rf.RF;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Use this layer as a starting point for your project code.  See {@link Dot11Interface} for more
  * details on these routines.
@@ -32,8 +34,8 @@ public class LinkLayer implements Dot11Interface
 		this.output = output;
 		theRF = new RF(null, null);
 		//TODO: start sender and receiver threads
-		Sender send = new Sender(ourMAC,dataOutgoing,theRF);
-		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming);
+		Sender send = new Sender(ourMAC,dataOutgoing,theRF,output);
+		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming,output);
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
 		output.println("LinkLayer: Constructor ran.");
@@ -58,9 +60,22 @@ public class LinkLayer implements Dot11Interface
 	 */
 	public int recv(Transmission t) {
 		output.println("LinkLayer: Pretending to block on recv()");
-		while(true); // <--- This is a REALLY bad way to wait.  Sleep a little each time through.
-		// return 0;
-	}
+		while(dataIncoming.peek() == null) // <--- This is a REALLY bad way to wait.  Sleep a little each time through.
+		{
+			try {
+				sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		try { //try to take Transmission and catch error if bad things occur
+			t = dataIncoming.take();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		output.println(t.getBuf().length);
+		return t.getBuf().length; //Does it need to return the length of data or hdr + data? ask brad
+		}
 
 	/**
 	 * Returns a current status code.  See docs for full description.

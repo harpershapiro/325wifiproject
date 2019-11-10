@@ -1,4 +1,5 @@
 package wifi;
+import java.io.PrintWriter;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import static java.lang.Thread.sleep;
@@ -11,16 +12,18 @@ public class Sender implements Runnable {
     private String state;
     private  ArrayBlockingQueue<Transmission> dataOutgoing;
     private rf.RF theRF;
+    private PrintWriter output;
 
 
 
-    public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF){
+    public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF, PrintWriter output){
         this.mac = mac;
         this.retry = false;
         this.fullyIdle = false;
         this.state = "waiting4data"; //when thread is called start at waiting4data to start
         this.dataOutgoing = dataOutgoing;
         this.theRF = theRF;
+        this.output = output;
     }
 
     @Override
@@ -36,6 +39,7 @@ public class Sender implements Runnable {
                 //todo: check if idle before transmit and only send once it is Idle (is WITHIN scope of CP#2)
                 //todo: also input a correct CRC into packet (probably using CRC32())
                 while((theRF.inUse())) {
+                    output.println("Channel In use Waiting 2 seconds");
                     sleep(2000);
                 }
                 theRF.transmit(pck.getFrame());

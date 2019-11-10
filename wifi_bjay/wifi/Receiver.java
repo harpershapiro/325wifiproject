@@ -1,6 +1,7 @@
 package wifi;
 import rf.RF;
 
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.zip.CRC32;
@@ -16,11 +17,13 @@ public class Receiver implements Runnable {
     private RF theRF;       //You'll need one of these eventually
     private CRC32 checksum;
     ArrayBlockingQueue<Transmission> dataIncoming;
+    private PrintWriter output;
 
-    public Receiver(int mac, rf.RF theRF, ArrayBlockingQueue<Transmission> dataIncoming){
+    public Receiver(int mac, rf.RF theRF, ArrayBlockingQueue<Transmission> dataIncoming, PrintWriter output){
         this.mac = mac;
         this.theRF = theRF;
         this.dataIncoming = dataIncoming;
+        this.output = output;
 
     }
 
@@ -80,14 +83,16 @@ public class Receiver implements Runnable {
     public void run(){
         //getData();
         //testing thread
+        byte[] data;
+
         while(true) {
 
 //            System.out.println("Receiver thread running.");
             System.out.println("RECV Waiting for packets");
             rec_pck = theRF.receive();
+            data = Arrays.copyOfRange(rec_pck,6, (rec_pck.length - Packet.CRC_BYTES));
             //todo: not within scope of CP#2 but its helpful, grab the info out of the packet like dest,src,data and the crc
             System.out.println("RECV rec_pck: "+ rec_pck);
-            byte[] data = Arrays.copyOfRange(rec_pck,6, (rec_pck.length - Packet.CRC_BYTES));
             Transmission rec_trans = new Transmission((short)-1,(short)-1,data);
             dataIncoming.add(rec_trans);
 //            try {
