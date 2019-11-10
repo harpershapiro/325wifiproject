@@ -1,5 +1,10 @@
 package wifi;
 import rf.RF;
+
+import java.util.Arrays;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.zip.CRC32;
+
 import static java.lang.Thread.sleep;
 
 
@@ -9,10 +14,13 @@ public class Receiver implements Runnable {
     private long crc;       //This is the crc that we will save to compare to the packet later
     private byte[] rec_pck; //Place holder for when we rec packet we can store it
     private RF theRF;       //You'll need one of these eventually
+    private CRC32 checksum;
+    ArrayBlockingQueue<Transmission> dataIncoming;
 
-    public Receiver(int mac,rf.RF theRF){
+    public Receiver(int mac, rf.RF theRF, ArrayBlockingQueue<Transmission> dataIncoming){
         this.mac = mac;
         this.theRF = theRF;
+        this.dataIncoming = dataIncoming;
 
     }
 
@@ -79,6 +87,9 @@ public class Receiver implements Runnable {
             rec_pck = theRF.receive();
             //todo: not within scope of CP#2 but its helpful, grab the info out of the packet like dest,src,data and the crc
             System.out.println("RECV rec_pck: "+ rec_pck);
+            byte[] data = Arrays.copyOfRange(rec_pck,6, (rec_pck.length - Packet.CRC_BYTES));
+            Transmission rec_trans = new Transmission((short)-1,(short)-1,data);
+            dataIncoming.add(rec_trans);
 //            try {
 //
 //                sleep(1000);
@@ -86,6 +97,9 @@ public class Receiver implements Runnable {
 //                System.out.println("Interrupted.");
 //            }
         }
+        //grab data from rec_pck create a new transmission object, fill that objet with the data and place holder for the hdr
+        //Add to the incommingdata Queue
+
     }
 
 }

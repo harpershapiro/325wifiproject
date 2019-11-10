@@ -3,7 +3,9 @@ import java.util.zip.CRC32;
 
 public class Packet {
     public static final int NUM_CONTROL_BYTES = 2, DEST_ADDR_BYTES=2, SRC_ADDR_BYTES=2, CRC_BYTES=4;
-    public static final int NON_DATA_BYTES = NUM_CONTROL_BYTES+DEST_ADDR_BYTES+SRC_ADDR_BYTES+CRC_BYTES;
+    public static final int HDRBYTES =  NUM_CONTROL_BYTES+DEST_ADDR_BYTES+SRC_ADDR_BYTES;
+    public static final int NON_DATA_BYTES = HDRBYTES+CRC_BYTES;
+
     private int frameType;
     private int retry;
     private int seqNum;
@@ -88,6 +90,10 @@ public class Packet {
      * @return
      */
     private byte[] fillData(byte[] frame){
+        int frameLen = NON_DATA_BYTES+len;
+        for(int i = HDRBYTES; i < frameLen-CRC_BYTES;i++) {
+            frame[i] = data[i-HDRBYTES];
+        }
         return frame;
     }
 
@@ -97,12 +103,20 @@ public class Packet {
      * @return
      */
     private byte[] fillCheckSum(byte[] frame){
+        int frameLen = NON_DATA_BYTES+len;
+        //cast long crc to int to make it bytes
+        long crc = getCheckSum();
+        frame[frameLen-4] = (byte)((crc>>24));   //shift by 24 so we we only grab the 8 right most bits
+        frame[frameLen-3] = (byte)(crc>>16);
+        frame[frameLen-2] = (byte)((crc>>8));
+        frame[frameLen-1] = (byte)((crc));       //don't shift so we we only grab the 8 right most bits
+
         return frame;
     }
 
     private long getCheckSum(){
-        return -1; // all 1's in binary to bypass checksum implementation for testing purposes
-        //return checkSum.getValue();
+         // all 1's in binary to bypass checksum implementation for testing purposes
+        return checkSum.getValue();
     }
 
     /**
