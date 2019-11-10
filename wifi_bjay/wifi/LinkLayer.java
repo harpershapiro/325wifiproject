@@ -33,7 +33,7 @@ public class LinkLayer implements Dot11Interface
 		theRF = new RF(null, null);
 		//TODO: start sender and receiver threads
 		Sender send = new Sender(ourMAC,dataOutgoing,theRF);
-		Receiver receive = new Receiver(ourMAC,theRF);
+		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming);
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
 		output.println("LinkLayer: Constructor ran.");
@@ -48,7 +48,7 @@ public class LinkLayer implements Dot11Interface
 		byte[] splitArr = Arrays.copyOfRange(data,0,len);
 		//theRF.transmit(data); //inside sender now
 		dataOutgoing.add(new Transmission(ourMAC,dest,splitArr));
-		System.out.println("Have added to dataIncoming Queue");
+		System.out.println("Have added to dataOutcomming Queue");
 		return len;
 	}
 

@@ -35,9 +35,12 @@ public class Sender implements Runnable {
                 System.out.println("have created a packet pck : "+ pck);
                 //todo: check if idle before transmit and only send once it is Idle (is WITHIN scope of CP#2)
                 //todo: also input a correct CRC into packet (probably using CRC32())
+                while((theRF.inUse())) {
+                    sleep(2000);
+                }
                 theRF.transmit(pck.getFrame());
                 System.out.println("have Transmitted the PCK");
-                //sleep(1000);
+                //sleep(1000); //sleep for 1 second
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -84,7 +87,7 @@ public class Sender implements Runnable {
                         //set retry to true
                         //go back to beginning, new packet out of same data from before
 
-        // switch statement using above comment as reference
+        // switch statement using above comment as reference // beyond scope of CP#2 but good to look at.
 //        switch (state) {
 //            case "waiting4data":
 //                //wait until incoming data, once data comes check if idle or not and update state
