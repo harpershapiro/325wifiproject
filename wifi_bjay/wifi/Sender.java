@@ -37,14 +37,12 @@ public class Sender implements Runnable {
                 Packet pck = new Packet(000,0,0,data.getDestAddr(),data.getSourceAddr(),bytedata,bytedata.length);
                 System.out.println("have created a packet pck : "+ pck);
                 //todo: check if idle before transmit and only send once it is Idle (is WITHIN scope of CP#2)
-                //todo: also input a correct CRC into packet (probably using CRC32())
                 while((theRF.inUse())) {
                     output.println("Channel In use Waiting 2 seconds");
                     sleep(2000);
                 }
-                theRF.transmit(pck.getFrame());
+                theRF.transmit(pck.getFrame()); //Sent off frame to recv() to be picked up by Recv() class
                 System.out.println("have Transmitted the PCK");
-                //sleep(1000); //sleep for 1 second
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

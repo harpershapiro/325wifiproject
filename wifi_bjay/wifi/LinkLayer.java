@@ -48,10 +48,10 @@ public class LinkLayer implements Dot11Interface
 	public int send(short dest, byte[] data, int len) {
 		output.println("LinkLayer: Sending "+len+" bytes to "+dest);
 		byte[] splitArr = Arrays.copyOfRange(data,0,len);
-		//theRF.transmit(data); //inside sender now
+		//theRF.transmit(data); //inside sender class now
 		dataOutgoing.add(new Transmission(ourMAC,dest,splitArr));
 		System.out.println("Have added to dataOutcomming Queue");
-		return len;
+		return len; //return the len of the amount of data
 	}
 
 	/**
@@ -60,16 +60,17 @@ public class LinkLayer implements Dot11Interface
 	 */
 	public int recv(Transmission t) {
 		output.println("LinkLayer: Pretending to block on recv()");
-		while(dataIncoming.peek() == null) // <--- This is a REALLY bad way to wait.  Sleep a little each time through.
+		while(dataIncoming.peek() == null) // check if line is use, If it is is try to sleep for half a second else break
 		{
 			try {
-				sleep(500);
+				sleep(500); //wait half a second (don't take up cpu time)
+				//todo: will become DIFS i think, the DIFS calc is SIFS + two slot times (aka two backoff windows)
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		try { //try to take Transmission and catch error if bad things occur
-			t = dataIncoming.take();
+			t = dataIncoming.take(); //remove the data from the Queue and store the data for later
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
