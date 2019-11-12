@@ -106,7 +106,7 @@ public class Packet {
         int frameLen = NON_DATA_BYTES+len;
         //cast long crc to int to make it bytes
         long crc = getCheckSum();
-        frame[frameLen-4] = (byte)((crc>>24));   //shift by 24 so we we only grab the 8 right most bits
+        frame[frameLen-4] = (byte)((crc>>24));   //shift by 24 so we we only grab the 8 left most bits
         frame[frameLen-3] = (byte)(crc>>16);
         frame[frameLen-2] = (byte)((crc>>8));
         frame[frameLen-1] = (byte)((crc));       //don't shift so we we only grab the 8 right most bits
@@ -115,8 +115,8 @@ public class Packet {
     }
 
     private long getCheckSum(){
-         // all 1's in binary to bypass checksum implementation for testing purposes
-        return checkSum.getValue();
+        // all 1's in binary to bypass checksum implementation for testing purposes
+        return -1;//checkSum.getValue();
     }
 
     /**
