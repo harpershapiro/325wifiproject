@@ -28,23 +28,22 @@ public class Receiver implements Runnable {
     }
 
 
-
     /**
      * Waits for a packet and once it gets one check the CRC, if CRC passed then return the packet and maybe start ack process
      * @return The received packet (after checking it)
      */
     public byte[] getData(){
-        rec_pck = theRF.receive(); //This will wait until it receives a packet and only continue once it does
-        setCRC(rec_pck); //Set crc before hand (see "base case" of checkCRC()
+        rec_pck = theRF.receive();  //This will wait until it receives a packet and only continue once it does
+        setCRC(rec_pck);            //Set crc before hand (see "base case" of checkCRC()
         if (checkCRC(rec_pck)) {
             System.out.println("getData() CRC check was: True");
             return rec_pck; //check sum was correct go ahead give packet too layer above and send back ack
-            //to send the ack well prob call the packet class and rearrange the info as needed
+                            //to send the ack well prob call the packet class and rearrange the info as needed
         }
         else {
             System.out.println("getData() CRC check was: False");
-            //??? checksum failed do something
-            return rec_pck;//bad don't return packet just a place holder for now
+            //??? checksum failed do something else
+            return rec_pck; //bad don't return packet just a place holder for now
         }
     }
 
@@ -53,13 +52,10 @@ public class Receiver implements Runnable {
      * @param pck given a packet it will both get the CRC from packet as well as calculate a new one to compare too.
      * @return True if The CRC is equal to our calc CRC
      */
-    public boolean checkCRC(byte[] pck) {
+    public boolean checkCRC(byte[] pck) { //todo: replace this method with one that uses CRC32 after we grab the data from packet then compare it
         if (crc == -1) { //if passed crc is -1 (aka there all 1's) bypass this step //BASE CASE
             return true;
         }
-        //todo: Does the header info count twords the checkSum total or just the data length? //not within scope of CP#2 tho
-        //if above is true then //todo: bitwise shift header and crc out from packet and keep data
-        // shift 6 (or 48 in bits?) to the left to remove header. then shift 10 (32? bits) to the right to remove CRC
         int pckLength = pck.length; //get the length of data inside of the packet (we - 10 because those are extra header bytes)
         int index = 0;
         long calcCRC = 0;
@@ -84,27 +80,25 @@ public class Receiver implements Runnable {
         //getData();
         //testing thread
         byte[] data;
-
         while(true) {
 
 //            System.out.println("Receiver thread running.");
             System.out.println("RECV Waiting for packets");
-            rec_pck = theRF.receive();
-            data = Arrays.copyOfRange(rec_pck,6, (rec_pck.length - Packet.CRC_BYTES));
+            rec_pck = theRF.receive(); //will wait until a data comes in
+            data = Arrays.copyOfRange(rec_pck,6, (rec_pck.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
             //todo: not within scope of CP#2 but its helpful, grab the info out of the packet like dest,src,data and the crc
             System.out.println("RECV rec_pck: "+ rec_pck);
             Transmission rec_trans = new Transmission((short)-1,(short)-1,data);
-            dataIncoming.add(rec_trans);
+            dataIncoming.add(rec_trans); //add to incoming Queue
+        }
 //            try {
 //
 //                sleep(1000);
 //            } catch (InterruptedException e) {
 //                System.out.println("Interrupted.");
 //            }
-        }
         //grab data from rec_pck create a new transmission object, fill that objet with the data and place holder for the hdr
         //Add to the incommingdata Queue
 
     }
-
 }
