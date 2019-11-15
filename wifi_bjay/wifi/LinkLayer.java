@@ -60,7 +60,8 @@ public class LinkLayer implements Dot11Interface
 	 */
 	public int recv(Transmission t) {
 		output.println("LinkLayer: Pretending to block on recv()");
-		while(dataIncoming.peek() == null) // check if line is use, If it is is try to sleep for half a second else break
+
+		/*while(dataIncoming.peek() == null) // check if line is use, If it is is try to sleep for half a second else break
 		{
 			try {
 				sleep(500); //wait half a second (don't take up cpu time)
@@ -68,13 +69,20 @@ public class LinkLayer implements Dot11Interface
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
+
 		try { //try to take Transmission and catch error if bad things occur
-			t = dataIncoming.take(); //remove the data from the Queue and store the data for later
+			Transmission receipt = dataIncoming.take(); //remove the data from the Queue and store the data for later
+			//fill transmission object
+			t.setBuf(receipt.getBuf());
+			t.setDestAddr(receipt.getDestAddr());
+			t.setSourceAddr(receipt.getSourceAddr());
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			output.println("Recv call interrupted.");
 		}
 		output.println(t.getBuf().length);
+		//this buffer contains headers+data. extract data, addresses, crc.
+		//byte[] data =
 		return t.getBuf().length; //Does it need to return the length of data or hdr + data? ask brad
 		}
 

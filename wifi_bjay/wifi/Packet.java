@@ -25,7 +25,7 @@ public class Packet {
         this.len = len;
 
         this.checkSum = new CRC32();
-        checkSum.update(data,0, len);
+        checkSum.update(data,0, len); //todo:UPDATE CHECKSUM WITH HEADERS AND DATA
 
     }
 

@@ -13,7 +13,7 @@ import static java.lang.Thread.sleep;
 public class Receiver implements Runnable {
     private int mac;
     private long crc;       //This is the crc that we will save to compare to the packet later
-    private byte[] rec_pck; //Place holder for when we rec packet we can store it
+    //private byte[] rec_pck; //Place holder for when we rec packet we can store it
     private RF theRF;       //You'll need one of these eventually
     private CRC32 checksum;
     ArrayBlockingQueue<Transmission> dataIncoming;
@@ -32,6 +32,7 @@ public class Receiver implements Runnable {
      * Waits for a packet and once it gets one check the CRC, if CRC passed then return the packet and maybe start ack process
      * @return The received packet (after checking it)
      */
+    /*
     public byte[] getData(){
         rec_pck = theRF.receive();  //This will wait until it receives a packet and only continue once it does
         setCRC(rec_pck);            //Set crc before hand (see "base case" of checkCRC()
@@ -45,7 +46,7 @@ public class Receiver implements Runnable {
             //??? checksum failed do something else
             return rec_pck; //bad don't return packet just a place holder for now
         }
-    }
+    }*/
 
     /**
      *
@@ -77,17 +78,23 @@ public class Receiver implements Runnable {
 
     @Override
     public void run(){
-        //getData();
-        //testing thread
+        byte[] rec_frame; //variable to store our receipt from RF layer
         byte[] data;
-        while(true) {
 
-//            System.out.println("Receiver thread running.");
-            System.out.println("RECV Waiting for packets");
-            rec_pck = theRF.receive(); //will wait until a data comes in
-            data = Arrays.copyOfRange(rec_pck,6, (rec_pck.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
+        while(true) {
+            //check if there is some data to receive, sleep for a bit otherwise
+            output.println("RECV Waiting for packets");
+            while(!theRF.dataWaiting()){
+                try {
+                    sleep(50); //not sure how long to sleep yet
+                } catch (InterruptedException e){
+                    continue; //just go back to top if this didn't work
+                }
+            }
+            rec_frame = theRF.receive(); //will wait until a data comes in
+            data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
             //todo: not within scope of CP#2 but its helpful, grab the info out of the packet like dest,src,data and the crc
-            System.out.println("RECV rec_pck: "+ rec_pck);
+            System.out.println("RECV rec_pck: "+ rec_frame);
             Transmission rec_trans = new Transmission((short)-1,(short)-1,data);
             dataIncoming.add(rec_trans); //add to incoming Queue
         }

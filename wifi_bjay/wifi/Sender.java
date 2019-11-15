@@ -41,7 +41,9 @@ public class Sender implements Runnable {
                     output.println("Channel In use Waiting 2 seconds");
                     sleep(2000);
                 }
-                theRF.transmit(pck.getFrame()); //Sent off frame to recv() to be picked up by Recv() class
+                byte[] frame = pck.getFrame();
+                output.println("Last byte of data: " + frame[frame.length-5]);
+                theRF.transmit(frame); //Sent off frame to recv() to be picked up by Recv() class
                 System.out.println("have Transmitted the PCK");
             } catch (InterruptedException e) {
                 e.printStackTrace();
