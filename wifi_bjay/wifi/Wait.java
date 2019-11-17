@@ -13,31 +13,61 @@ public class Wait { //A class with all the wait's we will use for this project
      */
     public long SIFS(RF theRF) {
         //todo: calc SIFS wait timer (maybe done)
-        long calc = theRF.aSIFSTime; //is it really this easy??
+        long calc = theRF.aSIFSTime + theRF.clock(); //is it really this easy??
         try {
-            sleep(calc);
+            while(true) {
+                sleep(50);
+                if (theRF.clock() >= calc) break; //if the clock is beyond our wait time then we must have waited that much time
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return calc;
     }
 
-    public long DIFS(short start, RF theRF) {
-
+    public long DIFS(long end, RF theRF) throws InterruptedException {
+        if (end > 0) { //don't calc new "end" point just continue until we did our hard time
+            while(true) {
+                sleep(50);
+                if (theRF.clock() >= end) break; //if the clock is beyond our wait time then we must have waited that much time
+            }
+            return end;
+        }
 
         //todo: DIFS = SIFS + 2 windows (aka 2 backoff slots)
-        long calc = SIFS(theRF) + (theRF.aSlotTime * 2);
-        //If sleep interrupted then save current time and when we resume continue with time as start
-
-
-        return calc-start;
+        long calc = (SIFS(theRF) + (theRF.aSlotTime * 2)) + theRF.clock();
+        while(true) {
+            sleep(50);
+            if (theRF.clock() >= calc) break; //if the clock is beyond our wait time then we must have waited that much time
+        }
+        // If sleep interrupted then save current time and when we resume continue with time as start
+        return calc;
         //we minus by start because if the person got interrupted while waiting they should left off where they started
     }
-    public long BackoffWindow(int start,RF theRF) {
+
+    /**
+     *
+     * @param end   If end is greater than 0 then use this is the break case rather than calc new backoff time
+     * @param theRF How we gather info for the vars like max min and clock
+     * @return      The total time we waited.
+     * @throws InterruptedException
+     */
+    public long BackoffWindow(int end,RF theRF) throws InterruptedException {
+        if (end > 0) { //don't calc new "end" point just continue until we did our hard time
+            while(true) {
+                sleep(50);
+                if (theRF.clock() >= end) break; //if the clock is beyond our wait time then we must have waited that much time
+            }
+            return end;
+        }
         int max = theRF.aCWmax;
         int min = theRF.aCWmin;
-        long ranBackoff = (int) (min + (Math.random() * max));
-        long calc = (int) theRF.aSlotTime * ranBackoff;
-        return calc-start;
+        long ranBackoff = (int) (min + (Math.random() * max)); //might be wrong (probably is def wrong)
+        long calc = (theRF.aSlotTime * ranBackoff)+theRF.clock();
+        while(true) {
+            sleep(50);
+            if (theRF.clock() >= calc) break; //if the clock is beyond our wait time then we must have waited that much time
+        }
+        return calc;
     }
 }
