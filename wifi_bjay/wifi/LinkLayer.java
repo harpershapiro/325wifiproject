@@ -77,12 +77,20 @@ public class LinkLayer implements Dot11Interface
 			t.setBuf(receipt.getBuf());
 			t.setDestAddr(receipt.getDestAddr());
 			t.setSourceAddr(receipt.getSourceAddr());
+			//fill ACK packet to transmit
+			if (t.getDestAddr() != -1) { //if it's not equal to -1 then we should send ACK
+				byte[] emptyData = new byte[0];
+				//Transmission buildAck = new Transmission(t.getDestAddr(), t.getSourceAddr(), emptyData);
+				Packet ack_pck = new Packet(001,0,0,t.getSourceAddr(),t.getDestAddr(),emptyData,emptyData.length);
+				//todo:wait SIFS then immediately transmit Need to find how to calculate SIFS (done? in new Wait class)
+				theRF.transmit(ack_pck.getFrame()); //should transmit the packet made above to the "sender" with ACK and empty data
+			}
+			//End ACK related things
 		} catch (InterruptedException e) {
 			output.println("Recv call interrupted.");
 		}
 		output.println(t.getBuf().length);
 		//this buffer contains headers+data. extract data, addresses, crc.
-		//byte[] data =
 		return t.getBuf().length; //Does it need to return the length of data or hdr + data? ask brad
 		}
 

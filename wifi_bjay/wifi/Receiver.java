@@ -93,10 +93,25 @@ public class Receiver implements Runnable {
             }
             rec_frame = theRF.receive(); //will wait until a data comes in
             data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
-            //todo: not within scope of CP#2 but its helpful, grab the info out of the packet like dest,src,data and the crc
-            System.out.println("RECV rec_pck: "+ rec_frame);
-            Transmission rec_trans = new Transmission((short)-1,(short)-1,data);
-            dataIncoming.add(rec_trans); //add to incoming Queue
+            //Get Dest and Src from rec_frame
+            short dest=(short)(((rec_frame[2] & 0xFF) << 8) | (rec_frame[3] & 0xFF));   //is the short value of dest from packet
+            short src=(short)(((rec_frame[4] & 0xFF) << 8) | (rec_frame[5] & 0xFF));    //is the short value of src from packet
+            //End getting Dest and Src info
+            Transmission rec_trans = new Transmission(dest,src,data); //todo: change (short)-1's to there proper values (done? need double check on dest and src calculations)
+
+            //CHECK if Dest is our mac or -1 if not ignore it and move on else pass it onto the incoming Queue for LinkLayer recv() to use
+            if (rec_trans.getDestAddr() == mac) {
+                //Get control bits for ACK catching
+                short control = (short)(((rec_frame[0] & 0xFF) << 8) | (rec_frame[1] & 0xFF));
+                System.out.println("RECV rec_pck: "+ rec_frame);
+                //Begin ACK catching
+                if (control == 0x2000) {    //if control is == to hex2000 (0010 0000 0000 0000) then this packet is an ack
+                    //todo: catch the ack. pop the next data from queue for sender.
+                    output.println("RECEIVER() has recv'd and ack : "+control);
+                }
+                //End ACK catching
+                dataIncoming.add(rec_trans); //add to incoming Queue
+            }
         }
 //            try {
 //
