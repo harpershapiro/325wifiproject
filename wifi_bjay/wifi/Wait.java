@@ -35,7 +35,7 @@ public class Wait { //A class with all the wait's we will use for this project
         }
 
         //todo: DIFS = SIFS + 2 windows (aka 2 backoff slots)
-        long calc = (SIFS(theRF) + (theRF.aSlotTime * 2)) + theRF.clock();
+        long calc = (SIFS(theRF) + (theRF.aSlotTime * 2)); //we dont need to add clock because in the SIFS call it is doing it too
         while(true) {
             sleep(50);
             if (theRF.clock() >= calc) break; //if the clock is beyond our wait time then we must have waited that much time

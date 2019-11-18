@@ -29,6 +29,47 @@ public class Packet {
 
     }
 
+    public static int extractdest(byte[] b) {
+        int dest = 0;
+        dest=  ((b[2] & 0xff) << 8);   //is the short value of dest from packet
+        dest = ((b[3] & 0xff) | dest);
+        return dest;
+    }
+
+    public static int extractsrc(byte[] b) {
+        int src = 0;
+        src=  ((b[4] & 0xff) << 8);   //is the short value of dest from packet
+        src = ((b[5] & 0xff) | src);
+        return src;
+    }
+
+    /**
+     * @param b byte array aka the packet
+     * @param cmd CMD is the whitch value we witch to grab in the control bytes, 0 is frame type, 1 is retry bit, 2 is seq number
+     * @return one of the cmd types explained above
+     */
+    public static int extractcontrl(byte[] b, int cmd) {
+        int value = 0;
+
+        int seq = 0;
+        value =  ((b[0] & 0xff) << 8);   //is the short value of dest from packet
+        value =  ((b[1] & 0xff) | value);
+        System.out.println(Integer.toBinaryString(value));
+        if (cmd == 0) { //frame type
+            value = value >>> 13;
+        }
+        if (cmd == 1) { //retry
+            value = value << 19;
+            value = value >>> 31;
+        }
+        if (cmd == 2) { //seq #
+            value = value << 20;
+            value = value >>> 20;
+        } //sorry brad :^ ] (we had to write this)
+        return value;
+    }
+
+
     /**
      * Set frame type.
      * @param frameType
@@ -143,11 +184,18 @@ public class Packet {
 
     public static void main(String[] args){
         byte[] data = {1,2,3,4,5,6};
-        Packet packet = new Packet(5,1,0,200,100,data,data.length);
+        Packet packet = new Packet(1,1,255,255,255,data,data.length);
         System.out.println(packet);
         byte[] frame = packet.getFrame();
-        System.out.println("Byte 3: " + Integer.toBinaryString(frame[2]));
-        System.out.println("Byte 4: " + Integer.toBinaryString(frame[3]));
+        System.out.println("Dest : "+ extractdest(frame));
+        System.out.println("Src  : "+ extractsrc(frame));
+        System.out.println("Seq  : "+ extractcontrl(frame,2));
+        System.out.println("retry  : "+ extractcontrl(frame,1));
+        System.out.println("frameType  : "+ extractcontrl(frame,0));
+
+
+//        System.out.println("Byte 3: " + Integer.toBinaryString(frame[2]));
+//        System.out.println("Byte 4: " + Integer.toBinaryString(frame[3]));
     }
 
 }
