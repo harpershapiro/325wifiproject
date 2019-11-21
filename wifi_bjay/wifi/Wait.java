@@ -6,12 +6,17 @@ import static java.lang.Thread.sleep;
 
 public class Wait { //A class with all the wait's we will use for this project
 
+    public Wait (int countDown) { //todo: make an wait Object for threads to call upon to wait
+
+    }
+
+
     /**
      * Calling SIFS will return an int of how many mill's to wait. (is also used in the calc of DIFS)
      * @param theRF
      * @return an int of how long to wait. (the wait can happen here or where it is called)
      */
-    public long SIFS(RF theRF) {
+    public long SIFS(RF theRF) { //todo: remove the clock based waiting (this and DIFS)
         //todo: calc SIFS wait timer (maybe done)
         long calc = theRF.aSIFSTime + theRF.clock(); //is it really this easy??
         try {
