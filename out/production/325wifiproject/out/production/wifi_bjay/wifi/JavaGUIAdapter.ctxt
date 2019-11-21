@@ -1,0 +1,22 @@
+#BlueJ class context
+comment0.target=JavaGUIAdapter
+comment0.text=\n\ This\ class\ acts\ as\ a\ thin\ layer\ between\ the\ GUI\ client\ code\ and\ the\ Java-based\n\ 802.11~\ layer.\ \ (There's\ a\ similar\ layer\ that\ mediates\ between\ the\ Java\ GUI\ code\n\ and\ a\ C++\ implementation\ of\ the\ 802.11~\ project.)\ \ See\ {@link\ GUIClientInterface}\ \n\ for\ full\ descriptions\ of\ these\ routines.\n\ \n\ @author\ richards\n
+comment1.params=
+comment1.target=short[]\ getDefaultAddrs()
+comment1.text=\n\ An\ array\ of\ addresses\ to\ use\ for\ the\ "send"\ buttons\ in\ the\ GUI.\n\ @return\ An\ array\ of\ MAC\ addresses\ assigned\ to\ buttons\ by\ the\ GUI.\n
+comment2.params=MACaddr
+comment2.target=int\ initializeLinkLayer(short)
+comment2.text=\n\ Create\ an\ instance\ of\ the\ 802.11~\ layer.\ \ It\ wraps\ a\ PrintWriter\ around\ a\n\ BufferedReader\ that's\ wrapped\ around\ a\ CircularByteBuffer\ (whew\!)\ so\ that\n\ we\ can\ read\ the\ text\ that\ the\ 802.11~\ layer\ writes\ to\ the\ stream\ and\ \n\ display\ it\ in\ the\ GUI's\ window.\n\ \n\ @param\ MACaddr\ \ The\ MAC\ address\ passed\ to\ the\ 802.11~\ constructor.\n\ @return\ Returns\ 0\ on\ success,\ -1\ if\ an\ error\ occurs.\n
+comment3.params=
+comment3.target=byte[]\ watchForIncomingData()
+comment3.text=\n\ This\ method\ calls\ the\ 802.11~\ layer's\ recv()\ method,\ which\ should\ block\ until\n\ data\ arrives.\ \ It\ then\ builds\ an\ array\ of\ bytes\ consisting\ of\ the\ the\ sender's\n\ MAC\ address\ followed\ by\ the\ data\ from\ the\ recv()\ call.\ \ (This\ may\ seem\ odd,\ but\n\ the\ approach\ is\ easy\ to\ support\ on\ both\ the\ C++\ and\ Java\ side.)\n\ @return\ An\ array\ of\ bytes\ containing\ MAC\ addresses\ and\ data\n
+comment4.params=dest\ payload
+comment4.target=int\ sendOutgoingData(short,\ byte[])
+comment4.text=\n\ Wrapper\ around\ the\ 802.11~\ layer's\ send\ routine.\n\ @param\ dest\ \ The\ destination\ MAC\ address\n\ @param\ payload\ \ The\ data\ to\ send\n\ @return\ Returns\ the\ value\ returned\ by\ the\ linklayer's\ <code>send()</code>\ method.\n
+comment5.params=
+comment5.target=byte[]\ pollForStreamOutput()
+comment5.text=\n\ This\ routine\ pulls\ text\ from\ the\ stream\ to\ which\ the\ 802.11~\ layer\ is\ writing\n\ and\ returns\ any\ new\ text\ as\ an\ array\ of\ bytes.\n\ @return\ An\ array\ of\ bytes\ representing\ characters\ sent\ to\ output\ stream\ since\ last\ call.\n
+comment6.params=command\ value
+comment6.target=int\ sendCommand(int,\ int)
+comment6.text=\n\ The\ GUI\ calls\ this\ when\ the\ user\ asks\ to\ pass\ command\ info\ to\ the\ 802.11~\ layer.\n\ @param\ command\ \ Specifies\ the\ command\ to\ send\n\ @param\ value\ \ \ \ The\ value\ passed\ with\ the\ command\n\ @return\ Returns\ the\ value\ returned\ by\ the\ linklayer's\ <code>command()</code>\ method.\n
+numComments=7

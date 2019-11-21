@@ -100,11 +100,20 @@ public class Sender<Final> implements Runnable {
         while(true) {
             switch (state) {
                 case waiting4data:
+                    //look for data to send. do not remove until ACKed.
                     Transmission data = dataOutgoing.peek();
                     if (data == null) {
 //                        continue;
                         break;
                     }
+
+                    try {
+                        data = dataOutgoing.take();//todo: remove this line, only need while constructing state machine
+                    } catch (InterruptedException e) {
+                        continue;
+                    }
+
+                    //create packet from data, assign a new state depending on media
                     this.datapck = new Packet(000,0,0,data.getDestAddr(),data.getSourceAddr(),data.getBuf(),data.getBuf().length);
                     if (theRF.inUse()) { //if the Line is in use change to the corresponding state.
                         //we would set to false but it already set to false
@@ -125,6 +134,7 @@ public class Sender<Final> implements Runnable {
                     //not idle set state to !idle
                 case waiting4MedAccess:
                     output.println("REACHED WAITING$MEDACCESS");
+                    state=waiting4data;
                     //wait DFS then see if fullyIdle == true
                     //then transmit packet set state to waiting4ack
                     //else wait exponential backoff time
@@ -134,6 +144,7 @@ public class Sender<Final> implements Runnable {
                     break;
                 case waitingDIFS: //this will have the wait Object being used here
                     output.println("REACHED DIFS");
+                    state=waiting4data;
 
                     //wait until idle but also set fullyIdle = false
                     //then set state to idle
