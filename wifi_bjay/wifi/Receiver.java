@@ -99,17 +99,19 @@ public class Receiver implements Runnable {
             //End getting Dest and Src info
             Transmission rec_trans = new Transmission((short)dest,(short)src,data); //todo: change (short)-1's to there proper values (done)
 
-            //CHECK if Dest is our mac or -1 if not ignore it and move on else pass it onto the incoming Queue for LinkLayer recv() to use
+            //CHECK if Dest is for us
             if (dest == mac || dest == -1) {
-                //Get control bits for ACK catching
-                short control = (short)(((rec_frame[0] & 0xFF) << 8) | (rec_frame[1] & 0xFF));
+
+                //short control = (short)(((rec_frame[0] & 0xFF) << 8) | (rec_frame[1] & 0xFF)); // DO WE NEED THIS?
                 System.out.println("RECV rec_pck: "+ rec_frame);
-                //Begin ACK catching
-//                if (control == 0x2000) {    //if control is == to hex2000 (0010 0000 0000 0000) then this packet is an ack
-//                    //todo: catch the ack. pop the next data from queue for sender. (need to move to sender thread)
-//                    output.println("RECEIVER() has recv'd and ack : "+control);
-//                }
-                //End ACK catching
+
+                //SEND AN ACK
+                if(dest!=-1) {
+                    int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM); //ACK packet will hold the seqNum we received
+                    Packet ack = new Packet(1, 0, seqNum, src, dest, new byte[0], 0);
+                    //WAIT SIFS
+                    theRF.transmit(ack.getFrame());
+                }
                 dataIncoming.add(rec_trans); //add to incoming Queue
             }
         }

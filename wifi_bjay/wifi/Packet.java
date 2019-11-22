@@ -5,6 +5,7 @@ public class Packet {
     public static final int NUM_CONTROL_BYTES = 2, DEST_ADDR_BYTES=2, SRC_ADDR_BYTES=2, CRC_BYTES=4;
     public static final int HDRBYTES =  NUM_CONTROL_BYTES+DEST_ADDR_BYTES+SRC_ADDR_BYTES;
     public static final int NON_DATA_BYTES = HDRBYTES+CRC_BYTES;
+    public static final int FRAME_TYPE=0, RETRY=1, SEQ_NUM=0;
 
     private int frameType;
     private int retry;
@@ -51,18 +52,18 @@ public class Packet {
     public static int extractcontrl(byte[] b, int cmd) {
         int value = 0;
 
-        int seq = 0;
+        //int seq = 0;
         value =  ((b[0] & 0xff) << 8);   //is the short value of dest from packet
         value =  ((b[1] & 0xff) | value);
         System.out.println(Integer.toBinaryString(value));
-        if (cmd == 0) { //frame type
+        if (cmd == FRAME_TYPE) {
             value = value >>> 13;
         }
-        if (cmd == 1) { //retry
+        if (cmd == RETRY) {
             value = value << 19;
             value = value >>> 31;
         }
-        if (cmd == 2) { //seq #
+        if (cmd == SEQ_NUM) {
             value = value << 20;
             value = value >>> 20;
         } //sorry brad :^ ] (we had to write this)
@@ -76,6 +77,9 @@ public class Packet {
      */
     public void setFrameType(int frameType){
         this.frameType = frameType;
+    }
+    public void setRetry(int retry){
+        this.retry = retry;
     }
     ////////////ADD ALL SETTERS AND GETTERS?///////////////////////////////////////////////
 

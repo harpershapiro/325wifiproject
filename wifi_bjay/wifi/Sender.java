@@ -6,6 +6,7 @@ import static java.lang.Thread.sleep;
 
 
 public class Sender<Final> implements Runnable {
+    private final int WAITING_4_DATA = 0, WAITING_4_MED_ACCESS = 1, WAITING_DIFS = 2, WAITING_BACKOFF = 3, WAITING_4_ACK = 4;
     private int mac;
     private boolean retry; //true if we are resending current packet
     private boolean fullyIdle; //true if we have never seen the channel busy during this transmission
@@ -14,21 +15,20 @@ public class Sender<Final> implements Runnable {
     private rf.RF theRF;
     private PrintWriter output;
     private Packet datapck = null;
-    private final int waiting4data = 0;
-    private final int waiting4MedAccess = 1;
-    private final int waitingDIFS = 2;
-    private final int waitingBackoff = 3;
-    private final int waiting4Ack = 4;
+    private int retryAttempts;
+    private int seqNum;
 
 
     public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF, PrintWriter output){
         this.mac = mac;
         this.retry = false;
         this.fullyIdle = false;
-        this.state = waiting4data; //when thread is called start at waiting4data to start
+        this.state = WAITING_4_DATA; //when thread is called start at waiting4data to start
         this.dataOutgoing = dataOutgoing;
         this.theRF = theRF;
         this.output = output;
+        this.retryAttempts=0;
+        this.seqNum=0;
     }
 
     @Override
@@ -99,68 +99,139 @@ public class Sender<Final> implements Runnable {
         // switch statement using above comment as reference // beyond scope of CP#2 but good to look at.
         while(true) {
             switch (state) {
-                case waiting4data:
+                case WAITING_4_DATA:
                     //look for data to send. do not remove until ACKed.
-                    Transmission data = dataOutgoing.peek();
+                    //OLD WAY OF KEEPING OLD DATA AROUND
+                   /* Transmission data = dataOutgoing.peek();
                     if (data == null) {
 //                        continue;
                         break;
-                    }
+                    }*/
+                   //BRAND NEW TRANSMISSION
+                   if(datapck==null) {
+                       Transmission data; //holds what we grabbed from queue
+                       //get next object
+                       try {
+                           data = dataOutgoing.take();//todo: remove this line, only need while constructing state machine
+                       } catch (InterruptedException e) {
+                           continue;
+                       }
 
-                    try {
-                        data = dataOutgoing.take();//todo: remove this line, only need while constructing state machine
-                    } catch (InterruptedException e) {
-                        continue;
-                    }
+                       //create data packet from our newest transmission
+                       this.datapck = new Packet(000, 0, seqNum, data.getDestAddr(), data.getSourceAddr(), data.getBuf(), data.getBuf().length);
+                   }
+                   //RETRY TRANMISSION
+                   else {
+                       datapck.setRetry(1);
+                   }
 
-                    //create packet from data, assign a new state depending on media
-                    this.datapck = new Packet(000,0,0,data.getDestAddr(),data.getSourceAddr(),data.getBuf(),data.getBuf().length);
+                    //assign a new state depending on medium access
                     if (theRF.inUse()) { //if the Line is in use change to the corresponding state.
                         //we would set to false but it already set to false
-                        //change state to
-                        state = waiting4MedAccess;
+                        state = WAITING_4_MED_ACCESS;
                         break;
                     }
                     else {
                         fullyIdle = true;
-                        //change state to
-                        state = waitingDIFS;
+                        state = WAITING_DIFS;
                         break;
                     }
 
-
-                    //wait until incoming data, once data comes check if idle or not and update state
-                    //is idle set state to idle
-                    //not idle set state to !idle
-                case waiting4MedAccess:
+                case WAITING_4_MED_ACCESS:
                     output.println("REACHED WAITING$MEDACCESS");
-                    state=waiting4data;
+                    state=WAITING_4_DATA;
+                    break;
                     //wait DFS then see if fullyIdle == true
                     //then transmit packet set state to waiting4ack
                     //else wait exponential backoff time
                     //channel interrupted:
                     //save exponential timer state
                     //set state to !idle state again and loop
-                    break;
-                case waitingDIFS: //this will have the wait Object being used here
-                    output.println("REACHED DIFS");
-                    state=waiting4data;
 
-                    //wait until idle but also set fullyIdle = false
-                    //then set state to idle
+                case WAITING_DIFS: //this will have the wait Object being used here
+                    output.println("WAITING DIFS");
+                    try {
+                        sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    //state=WAITING_4_DATA; //todo:remov when machine works
+
+                    //time elapsed & medium is not idle
+                        //state = WAITING_4_MED_ACCESS;
+                        // break;
+                    //time elapsed & medium is idle & fullyIdle false
+                        //state = WAITING_BACKOFF;
+                        // break;
+                    //time elapsed & medium idle & fullyIdle
+                    //IDEAL CASE
+                    if(fullyIdle & !theRF.inUse()) {
+                        theRF.transmit(datapck.getFrame());
+                        if(!theRF.inUse()){
+                            state = WAITING_4_ACK;
+                            break;
+                        }
+                    }
+                case WAITING_BACKOFF:
+                    //timer elasped in wait object
+                        //state=WAITING_4_ACK;
+                        //break;
+                    //medium is accessed elsewhere
+                        //state=WAITING_DIFS;
                     break;
-                case waitingBackoff:
+                case WAITING_4_ACK: //not a wait Object thing but an RF thingy
+                    boolean ackReceived = false;
+                    output.println("Transmitted packet #" + seqNum + ". Waiting Ack.");
+                    //start a timer
+                    //while(timer not elapsed && theRF.dataWaiting())
+                    int timer = 20; //TESTING TIMER>....................................................
+                    while(timer>0){
+                        if(theRF.dataWaiting()) {
+                            byte[] possibleAck = theRF.receive();
+                            int seqNum = Packet.extractcontrl(possibleAck,Packet.SEQ_NUM);
+                            int dest = Packet.extractdest(possibleAck);
+                            //ACK was for us!!!!!!!!!
+                            if(seqNum==this.seqNum && dest==mac){
+                                ackReceived = true;
+                            }
+                        }
+                        //sleep a little
+                        try {
+                            sleep(20);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        timer--;
+                    }
                     //ack received:
-                    //set fully idle to false
-                    //go back to beginning
-                    //ack not received in time:
-                    //up contention window
-                    //set retry to true
-                    //go back to beginning, new packet out of same data from before
-                    break;
-                case waiting4Ack: //not a wait Object thing but an RF thingy
+                    if(ackReceived) {
+                        //set fully idle to false
+                        fullyIdle = false;
+                        //set datapck to null
+                        datapck = null;
+                        //increment seq number
+                        seqNum++;
+                        state = WAITING_4_DATA;
+                        break;
+                    } else {
+                        output.println("Ack not received....going back to waiting for data");
+                        state = WAITING_4_DATA;
+                        break;
+                        //ack not received in time:
+                        //reset everything if retry limit is reached
+                        //otherwise
+                        //up contention window
+                        //set retry to true
+                        //increment retries
+
+                        //go back to beginning, new packet out of same data from before
+                    }
+
+
+
+                    //maybe?
                     //here we will remove or take from the Queue depending on if Ack was received or retransmit
-                    break;
+                    //break;
             }
 //            System.out.println(state);
         }
