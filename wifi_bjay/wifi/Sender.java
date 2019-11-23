@@ -194,10 +194,12 @@ public class Sender<Final> implements Runnable {
                             output.println("Picking up a possible ack...");
                             //byte[] possibleAck = theRF.receive();
                             int seqNum = ackFlag.get();
+                            //output.println("sender saw ackFlag, sequence number of " + seqNum);
                             //int dest = Packet.extractdest(possibleAck);
                             //ACK was for us!!!!!!!!!
                             if(seqNum==this.seqNum){
                                 ackReceived = true;
+                                break;
                             }
                         }
                         //sleep a little

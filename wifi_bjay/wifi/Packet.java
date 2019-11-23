@@ -5,7 +5,7 @@ public class Packet {
     public static final int NUM_CONTROL_BYTES = 2, DEST_ADDR_BYTES=2, SRC_ADDR_BYTES=2, CRC_BYTES=4;
     public static final int HDRBYTES =  NUM_CONTROL_BYTES+DEST_ADDR_BYTES+SRC_ADDR_BYTES;
     public static final int NON_DATA_BYTES = HDRBYTES+CRC_BYTES;
-    public static final int FRAME_TYPE=0, RETRY=1, SEQ_NUM=0;
+    public static final int FRAME_TYPE=0, RETRY=1, SEQ_NUM=2;
 
     private int frameType;
     private int retry;
@@ -53,19 +53,25 @@ public class Packet {
         int value = 0;
 
         //int seq = 0;
-        value =  ((b[0] & 0xff) << 8);   //is the short value of dest from packet
+        //set value to be the 16 control bits (with 16 left-padded 0s since it's an int)
+        value =  ((b[0] & 0xff) << 8);
         value =  ((b[1] & 0xff) | value);
-        //System.out.println(Integer.toBinaryString(value));
+        System.out.println("Extract control string "+ Integer.toBinaryString(value));
         if (cmd == FRAME_TYPE) {
             value = value >>> 13;
         }
-        if (cmd == RETRY) {
+        else if (cmd == RETRY) {
+            System.out.println("Extracting retry, starting with " + Integer.toBinaryString(value));
             value = value << 19;
             value = value >>> 31;
         }
-        if (cmd == SEQ_NUM) {
+        else if (cmd == SEQ_NUM) {
+            System.out.println("Extracting seqNum, starting with " + Integer.toBinaryString(value));
             value = value << 20;
+            System.out.println("Next " + Integer.toBinaryString(value));
             value = value >>> 20;
+            System.out.println("Finally " + Integer.toBinaryString(value));
+
         } //sorry brad :^ ] (we had to write this)
         return value;
     }
@@ -188,14 +194,17 @@ public class Packet {
 
     public static void main(String[] args){
         byte[] data = {1,2,3,4,5,6};
-        Packet packet = new Packet(1,1,255,255,255,data,data.length);
+        Packet packet = new Packet(1,0,255,255,255,data,data.length);
         System.out.println(packet);
         byte[] frame = packet.getFrame();
+        System.out.println(Integer.toBinaryString(frame[0]));
+        System.out.println(Integer.toBinaryString(frame[1]));
         System.out.println("Dest : "+ extractdest(frame));
         System.out.println("Src  : "+ extractsrc(frame));
-        System.out.println("Seq  : "+ extractcontrl(frame,2));
-        System.out.println("retry  : "+ extractcontrl(frame,1));
-        System.out.println("frameType  : "+ extractcontrl(frame,0));
+        System.out.println("Seq  : "+ extractcontrl(frame,SEQ_NUM));
+        System.out.println("retry  : "+ extractcontrl(frame,RETRY));
+        System.out.println("frameType  : "+ extractcontrl(frame,FRAME_TYPE));
+
 
 
 //        System.out.println("Byte 3: " + Integer.toBinaryString(frame[2]));

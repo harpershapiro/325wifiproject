@@ -99,8 +99,8 @@ public class Receiver implements Runnable {
 
             //If it's an ACK, need to let the sender know
             if(Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE) ==1) {
-                output.println("Received a possible ACK");
                 int seqNum = Packet.extractcontrl(rec_frame,Packet.SEQ_NUM);
+                output.println("Receiver got a possible Ack, Sequence number was "+ seqNum);
                 int dest = Packet.extractdest(rec_frame);
                 if(dest==mac){
                     //send news with sequence number to sender thread to compare
@@ -124,6 +124,7 @@ public class Receiver implements Runnable {
                 //SEND AN ACK
                 if(dest!=-1) {
                     int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM); //ACK packet will hold the seqNum we received
+                    output.println("Adding sequence number " + seqNum + " to an ACK");
                     Packet ack = new Packet(1, 0, seqNum, src, dest, new byte[0], 0);
                     output.println("Sending an ACK for "+seqNum);
                     //WAIT SIFS
