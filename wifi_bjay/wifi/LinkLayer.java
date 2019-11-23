@@ -2,6 +2,7 @@ package wifi;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import rf.RF;
 
@@ -19,8 +20,9 @@ public class LinkLayer implements Dot11Interface
 	private short ourMAC;       // Our MAC address
 	private PrintWriter output; // The output stream we'll write to
     //queues for transmitting
-	ArrayBlockingQueue<Transmission> dataOutgoing = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
-	ArrayBlockingQueue<Transmission> dataIncoming = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
+	private ArrayBlockingQueue<Transmission> dataOutgoing = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
+	private ArrayBlockingQueue<Transmission> dataIncoming = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
+	private AtomicInteger ackFlag; //alerts sender thread of an ack and sends its sequence number
 
 
 	/**
@@ -34,8 +36,9 @@ public class LinkLayer implements Dot11Interface
 		this.output = output;
 		theRF = new RF(null, null);
 		//TODO: start sender and receiver threads
-		Sender send = new Sender(ourMAC,dataOutgoing,theRF,output);
-		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming,output);
+        ackFlag.set(-1);
+		Sender send = new Sender(ourMAC,dataOutgoing,theRF,ackFlag,output);
+		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming,ackFlag,output);
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
 		output.println("LinkLayer: Constructor ran.");

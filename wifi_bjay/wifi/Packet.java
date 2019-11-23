@@ -55,7 +55,7 @@ public class Packet {
         //int seq = 0;
         value =  ((b[0] & 0xff) << 8);   //is the short value of dest from packet
         value =  ((b[1] & 0xff) | value);
-        System.out.println(Integer.toBinaryString(value));
+        //System.out.println(Integer.toBinaryString(value));
         if (cmd == FRAME_TYPE) {
             value = value >>> 13;
         }

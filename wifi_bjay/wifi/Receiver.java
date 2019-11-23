@@ -4,6 +4,7 @@ import rf.RF;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.CRC32;
 
 import static java.lang.Thread.sleep;
@@ -16,14 +17,17 @@ public class Receiver implements Runnable {
     //private byte[] rec_pck; //Place holder for when we rec packet we can store it
     private RF theRF;       //You'll need one of these eventually
     private CRC32 checksum;
-    ArrayBlockingQueue<Transmission> dataIncoming;
+    private ArrayBlockingQueue<Transmission> dataIncoming;
+    private AtomicInteger ackFlag; //value of the sequence number of an ack received in receiver thread (shared)
     private PrintWriter output;
 
-    public Receiver(int mac, rf.RF theRF, ArrayBlockingQueue<Transmission> dataIncoming, PrintWriter output){
+
+    public Receiver(int mac, rf.RF theRF, ArrayBlockingQueue<Transmission> dataIncoming, AtomicInteger ackFlag, PrintWriter output){
         this.mac = mac;
         this.theRF = theRF;
         this.dataIncoming = dataIncoming;
         this.output = output;
+        this.ackFlag = ackFlag;
 
     }
 
@@ -92,27 +96,46 @@ public class Receiver implements Runnable {
                 }
             }
             rec_frame = theRF.receive(); //will wait until a data comes in
+
+            //If it's an ACK, need to let the sender know
+            if(Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE) ==1) {
+                output.println("Received a possible ACK");
+                int seqNum = Packet.extractcontrl(rec_frame,Packet.SEQ_NUM);
+                int dest = Packet.extractdest(rec_frame);
+                if(dest==mac){
+                    //send news with sequence number to sender thread to compare
+                    ackFlag.set(seqNum);
+                }
+                continue;
+            }
+
+            //Package data for delivery
             data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
-            //Get Dest and Src from rec_frame
             int dest = Packet.extractdest(rec_frame);
             int src = Packet.extractsrc(rec_frame);
-            //End getting Dest and Src info
             Transmission rec_trans = new Transmission((short)dest,(short)src,data); //todo: change (short)-1's to there proper values (done)
 
-            //CHECK if Dest is for us
+            //CHECK if Data is actually for us
             if (dest == mac || dest == -1) {
 
                 //short control = (short)(((rec_frame[0] & 0xFF) << 8) | (rec_frame[1] & 0xFF)); // DO WE NEED THIS?
-                System.out.println("RECV rec_pck: "+ rec_frame);
+                //System.out.println("RECV rec_pck: "+ rec_frame);
 
                 //SEND AN ACK
                 if(dest!=-1) {
                     int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM); //ACK packet will hold the seqNum we received
                     Packet ack = new Packet(1, 0, seqNum, src, dest, new byte[0], 0);
+                    output.println("Sending an ACK for "+seqNum);
                     //WAIT SIFS
+                    try {
+                        sleep(RF.aSIFSTime);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     theRF.transmit(ack.getFrame());
                 }
-                dataIncoming.add(rec_trans); //add to incoming Queue
+                //Deliver data
+                dataIncoming.add(rec_trans);
             }
         }
 //            try {

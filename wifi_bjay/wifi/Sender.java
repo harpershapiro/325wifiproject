@@ -1,6 +1,7 @@
 package wifi;
 import java.io.PrintWriter;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Thread.sleep;
 
@@ -17,9 +18,11 @@ public class Sender<Final> implements Runnable {
     private Packet datapck = null;
     private int retryAttempts;
     private int seqNum;
+    private AtomicInteger ackFlag; //value of the sequence number of an ack received in receiver thread (shared)
 
 
-    public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF, PrintWriter output){
+
+    public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF,AtomicInteger ackFlag, PrintWriter output){
         this.mac = mac;
         this.retry = false;
         this.fullyIdle = false;
@@ -29,6 +32,7 @@ public class Sender<Final> implements Runnable {
         this.output = output;
         this.retryAttempts=0;
         this.seqNum=0;
+        this.ackFlag = ackFlag;
     }
 
     @Override
@@ -100,7 +104,7 @@ public class Sender<Final> implements Runnable {
         while(true) {
             switch (state) {
                 case WAITING_4_DATA:
-                    //look for data to send. do not remove until ACKed.
+                    //look for data to send
                     //OLD WAY OF KEEPING OLD DATA AROUND
                    /* Transmission data = dataOutgoing.peek();
                     if (data == null) {
@@ -185,19 +189,20 @@ public class Sender<Final> implements Runnable {
                     //start a timer
                     //while(timer not elapsed && theRF.dataWaiting())
                     int timer = 20; //TESTING TIMER>....................................................
-                    while(timer>0){
-                        if(theRF.dataWaiting()) {
-                            byte[] possibleAck = theRF.receive();
-                            int seqNum = Packet.extractcontrl(possibleAck,Packet.SEQ_NUM);
-                            int dest = Packet.extractdest(possibleAck);
+                    while(timer>0){ //todo: MOVE THIS INTO RECEIVER THREAD
+                        if(ackFlag.get()>=0) { //when ackFlag is set, compare sequence numbers
+                            output.println("Picking up a possible ack...");
+                            //byte[] possibleAck = theRF.receive();
+                            int seqNum = ackFlag.get();
+                            //int dest = Packet.extractdest(possibleAck);
                             //ACK was for us!!!!!!!!!
-                            if(seqNum==this.seqNum && dest==mac){
+                            if(seqNum==this.seqNum){
                                 ackReceived = true;
                             }
                         }
                         //sleep a little
                         try {
-                            sleep(20);
+                            sleep(100);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -205,6 +210,7 @@ public class Sender<Final> implements Runnable {
                     }
                     //ack received:
                     if(ackReceived) {
+                        output.println("ACK RECEIVED");
                         //set fully idle to false
                         fullyIdle = false;
                         //set datapck to null
