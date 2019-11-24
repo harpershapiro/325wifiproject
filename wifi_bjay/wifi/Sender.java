@@ -101,6 +101,7 @@ public class Sender<Final> implements Runnable {
                         //go back to beginning, new packet out of same data from before
 
         // switch statement using above comment as reference // beyond scope of CP#2 but good to look at.
+        Wait waiting = new Wait(32);
         while(true) {
             switch (state) {
                 case WAITING_4_DATA:
@@ -142,47 +143,71 @@ public class Sender<Final> implements Runnable {
                     }
 
                 case WAITING_4_MED_ACCESS:
-                    output.println("REACHED WAITING$MEDACCESS");
-                    state=WAITING_4_DATA;
-                    break;
-                    //wait DFS then see if fullyIdle == true
+                    output.println("WAITING_4_MED_ACCESS:"); //todo: remove output when working as intended
+//                    state=WAITING_4_DATA;
+//                    break;
+                    //check if RF in use, If false then line not in use wait DIFS
+                if (theRF.inUse()) {
+                        state = WAITING_4_MED_ACCESS; //keep waiting untail RF is not in use (false)
+                        break;
+                    }
+                    else {
+                        state = WAITING_DIFS;
+                        //from difs state we wait have two options (1 wait4MedAcc, 2 backoff window)
+                        break;
+                    }
+                    //below logic has been moved to DIFS or Backoff state
                     //then transmit packet set state to waiting4ack
+//                    if (fullyIdle == true) {
+//                        theRF.transmit(datapck.getFrame());
+//                        state = WAITING_4_ACK;
+//                        break;
+//                    }
                     //else wait exponential backoff time
-                    //channel interrupted:
-                    //save exponential timer state
-                    //set state to !idle state again and loop
-
+//                    else {
+                            //channel interrupted:
+                            //save exponential timer state
+                            //set state to WAITING_4_MED_ACCESS again and loop
+//                    }
                 case WAITING_DIFS: //this will have the wait Object being used here
-                    output.println("WAITING DIFS");
                     try {
-                        sleep(2000);
+//                        sleep(2000);
+                        output.println("WAITIN_DIFS "+waiting.DIFS(theRF)); //todo: remove output when working as intended
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        continue;
                     }
                     //state=WAITING_4_DATA; //todo:remov when machine works
-
                     //time elapsed & medium is not idle
-                        //state = WAITING_4_MED_ACCESS;
-                        // break;
+                    if (theRF.inUse()) { //true if line currently in use
+                        state = WAITING_4_MED_ACCESS; //wait until line not in use
+                        break;
+                    }
                     //time elapsed & medium is idle & fullyIdle false
-                        //state = WAITING_BACKOFF;
-                        // break;
+                    if (fullyIdle == false && !theRF.inUse()) { //good the line not in use start backoff
+                                                                //If fullyIdle is false then must be right branch of MAC rules
+                        state = WAITING_BACKOFF;
+                        break;
+                    }
                     //time elapsed & medium idle & fullyIdle
                     //IDEAL CASE
-                    if(fullyIdle & !theRF.inUse()) {
+                    if(fullyIdle && !theRF.inUse()) { //left branch of MAC rules (best case)
                         theRF.transmit(datapck.getFrame());
-                        if(!theRF.inUse()){
                             state = WAITING_4_ACK;
                             break;
-                        }
                     }
-                case WAITING_BACKOFF:
-                    //timer elasped in wait object
-                        //state=WAITING_4_ACK;
-                        //break;
-                    //medium is accessed elsewhere
+                case WAITING_BACKOFF: //almost always transmit when this is called
+                    //timer elapsed in wait object
+                    try {
+                        output.println("WAITING_BACKOFF "+waiting.BackoffWindow(theRF)); //todo: remove output when working as intended
+                        theRF.transmit(datapck.getFrame());
+                        state = WAITING_4_ACK;
+                        break;
+                    } catch (InterruptedException e) {
+                        //medium is accessed elsewhere
                         //state=WAITING_DIFS;
-                    break;
+                        continue;
+                        //break;
+                    }
                 case WAITING_4_ACK: //not a wait Object thing but an RF thingy
                     boolean ackReceived = false;
                     output.println("Transmitted packet #" + seqNum + ". Waiting Ack.");

@@ -1,166 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="1f91be8c-9ad8-4c9f-9e88-b6feff7d4d5a" name="Default Changelist" comment="">
+    <list default="true" id="d8837b48-c84e-4b3a-aec6-b5367d52a3a5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Packet.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Packet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" afterDir="false" />
     </list>
-    <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FUSProjectUsageTrigger">
-    <session id="873054427">
-      <usages-collector id="statistics.file.extensions.edit">
-        <counts>
-          <entry key="java" value="339" />
-        </counts>
-      </usages-collector>
-      <usages-collector id="statistics.file.types.edit">
-        <counts>
-          <entry key="JAVA" value="339" />
-        </counts>
-      </usages-collector>
-    </session>
-  </component>
-  <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/Packet.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1360">
-              <caret line="83" column="52" selection-start-line="83" selection-start-column="52" selection-end-line="83" selection-end-column="52" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="24">
-              <caret line="70" lean-forward="true" selection-start-line="70" selection-end-line="70" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/Sender.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="115" column="84" selection-start-line="115" selection-start-column="84" selection-end-line="115" selection-end-column="84" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="952">
-              <caret line="62" selection-start-line="62" selection-end-line="62" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" selection-start-line="2" selection-end-line="2" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+  <component name="CodeStyleSettingsInfer">
+    <option name="done" value="true" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" />
-        <option value="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" />
-        <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/wifi_bjay/wifi/Packet.java" />
-        <option value="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" />
-      </list>
-    </option>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="1" />
   </component>
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="out" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="out" type="462c0819:PsiDirectoryNode" />
-              <item name="production" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="out" type="462c0819:PsiDirectoryNode" />
-              <item name="production" type="462c0819:PsiDirectoryNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="out" type="462c0819:PsiDirectoryNode" />
-              <item name="production" type="462c0819:PsiDirectoryNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="+libs" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="out" type="462c0819:PsiDirectoryNode" />
-              <item name="production" type="462c0819:PsiDirectoryNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name=".idea" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="out" type="462c0819:PsiDirectoryNode" />
-              <item name="production" type="462c0819:PsiDirectoryNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="wifi" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="wifi_bjay" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="325wifiproject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="325wifiproject" type="462c0819:PsiDirectoryNode" />
-              <item name="wifi_bjay" type="462c0819:PsiDirectoryNode" />
-              <item name="wifi" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
-    </panes>
-  </component>
+  <component name="ProjectId" id="1U2JkK6VKAxCweC1Y82ZnGI0e8V" />
   <component name="PropertiesComponent">
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1574322059715" />
   </component>
@@ -176,7 +42,16 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Compound.multiWifiTest">
+    <configuration name="WiFiClient2" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="11" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="wifi.WiFiClient" />
+      <module name="325wifiproject" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Wifi Client" type="Application" factoryName="Application">
       <option name="ALTERNATIVE_JRE_PATH" value="11" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -194,13 +69,28 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="CompoundRunConfigurationType">
+      <toRun name="Wifi Client" type="Application" />
+      <toRun name="WiFiClient2" type="Application" />
+      <method v="2" />
+    </configuration>
+    <configuration name="multiWifiTest" type="CompoundRunConfigurationType">
+      <toRun name="Wifi Client" type="Application" />
+      <toRun name="WiFiClient2" type="Application" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.Wifi Client" />
+      <item itemvalue="Application.WiFiClient2" />
+      <item itemvalue="Compound.multiWifiTest" />
+    </list>
   </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="1f91be8c-9ad8-4c9f-9e88-b6feff7d4d5a" name="Default Changelist" comment="" />
+      <changelist id="d8837b48-c84e-4b3a-aec6-b5367d52a3a5" name="Default Changelist" comment="" />
       <created>1573515002682</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -208,55 +98,17 @@
     </task>
     <servers />
   </component>
-  <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
-    <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12260128" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Image Layers" order="2" />
-      <window_info id="Designer" order="3" />
-      <window_info id="UI Designer" order="4" />
-      <window_info id="Capture Tool" order="5" />
-      <window_info id="Favorites" order="6" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3177874" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" order="9" />
-      <window_info anchor="bottom" id="Messages" order="10" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Palette" order="3" />
-      <window_info anchor="right" id="Capture Analysis" order="4" />
-      <window_info anchor="right" id="Theme Preview" order="5" />
-      <window_info anchor="right" id="Palette&#9;" order="6" />
-      <window_info anchor="right" id="Maven Projects" order="7" />
-    </layout>
-  </component>
-  <component name="VcsContentAnnotationSettings">
-    <option name="myLimit" value="2678400000" />
-  </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="24">
-          <caret line="70" lean-forward="true" selection-start-line="70" selection-end-line="70" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/wifi_bjay/wifi/Sender.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="115" column="84" selection-start-line="115" selection-start-column="84" selection-end-line="115" selection-end-column="84" />
-        </state>
-      </provider>
-    </entry>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
