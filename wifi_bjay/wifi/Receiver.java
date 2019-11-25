@@ -3,6 +3,7 @@ import rf.RF;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.CRC32;
@@ -20,6 +21,7 @@ public class Receiver implements Runnable {
     private ArrayBlockingQueue<Transmission> dataIncoming;
     private AtomicInteger ackFlag; //value of the sequence number of an ack received in receiver thread (shared)
     private PrintWriter output;
+    private HashMap<Short,Integer> srcToSequence; //maps src address to next sequence number
 
 
     public Receiver(int mac, rf.RF theRF, ArrayBlockingQueue<Transmission> dataIncoming, AtomicInteger ackFlag, PrintWriter output){
@@ -28,7 +30,7 @@ public class Receiver implements Runnable {
         this.dataIncoming = dataIncoming;
         this.output = output;
         this.ackFlag = ackFlag;
-
+        this.srcToSequence = new HashMap<Short,Integer>();
     }
 
 
@@ -87,7 +89,7 @@ public class Receiver implements Runnable {
 
         while(true) {
             //check if there is some data to receive, sleep for a bit otherwise
-            output.println("RECV Waiting for packets");
+            if(LinkLayer.debug==1) output.println("RECV Waiting for packets");
             while(!theRF.dataWaiting()){
                 try {
                     sleep(50); //todo: look at datamations and find out how long to wait (add to waiting object)
@@ -100,7 +102,7 @@ public class Receiver implements Runnable {
             //If it's an ACK, need to let the sender know
             if(Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE) ==1) {
                 int seqNum = Packet.extractcontrl(rec_frame,Packet.SEQ_NUM);
-                output.println("Receiver got a possible Ack, Sequence number was "+ seqNum);
+                if(LinkLayer.debug==1) output.println("Receiver got a possible Ack, Sequence number was "+ seqNum);
                 int dest = Packet.extractdest(rec_frame);
                 if(dest==mac){
                     //send news with sequence number to sender thread to compare
@@ -114,20 +116,29 @@ public class Receiver implements Runnable {
             short dest = (short)Packet.extractdest(rec_frame);
             output.println("Receiver extracted " + dest + " from incoming frame.");
             short src = (short)Packet.extractsrc(rec_frame);
-            Transmission rec_trans = new Transmission((short)dest,(short)src,data); //todo: change (short)-1's to there proper values (done)
+
+
 
             //CHECK if Data is actually for us (either broadcast address or our personal MAC)
             if (dest == mac || dest == -1) {
 
-                //short control = (short)(((rec_frame[0] & 0xFF) << 8) | (rec_frame[1] & 0xFF)); // DO WE NEED THIS?
-                //System.out.println("RECV rec_pck: "+ rec_frame);
+                //Check for any gaps and update sequence number map
+                if(!srcToSequence.containsKey(src)){
+                    srcToSequence.put(src,0);
+                }
+                int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM);
+                int prevSeqNum = srcToSequence.get(src);//ACK packet will hold the seqNum we received
+                if(prevSeqNum<seqNum-1 && dest!=-1) output.println("WARNING: Packet may have been lost.");
+                srcToSequence.replace(src,seqNum+1);
+
+                Transmission rec_trans = new Transmission((short)dest,(short)src,data);
+
 
                 //SEND AN ACK
                 if(dest!=-1) {
-                    int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM); //ACK packet will hold the seqNum we received
-                    output.println("Adding sequence number " + seqNum + " to an ACK");
+                    if(LinkLayer.debug==1) output.println("Adding sequence number " + seqNum + " to an ACK");
                     Packet ack = new Packet(1, 0, seqNum, src, dest, new byte[0], 0);
-                    output.println("Sending an ACK for "+seqNum);
+                    if(LinkLayer.debug==1)output.println("Sending an ACK to " + dest + " for "+seqNum);
                     //WAIT SIFS
                     try {
                         sleep(RF.aSIFSTime); //todo: create waiting object and call sifs
@@ -140,14 +151,5 @@ public class Receiver implements Runnable {
                 dataIncoming.add(rec_trans);
             }
         }
-//            try {
-//
-//                sleep(1000);
-//            } catch (InterruptedException e) {
-//                System.out.println("Interrupted.");
-//            }
-        //grab data from rec_pck create a new transmission object, fill that objet with the data and place holder for the hdr
-        //Add to the incommingdata Queue
-
     }
 }

@@ -1,5 +1,6 @@
 package wifi;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,6 +19,8 @@ public class Sender<Final> implements Runnable {
     private Packet datapck = null;
     private int retryAttempts;
     private int seqNum;
+    private short dest;
+    private HashMap<Short,Integer> destToSequence; //maps dest to sequence number
     private AtomicInteger ackFlag; //value of the sequence number of an ack received in receiver thread (shared)
 
 
@@ -31,7 +34,8 @@ public class Sender<Final> implements Runnable {
         this.theRF = theRF;
         this.output = output;
         this.retryAttempts=0;
-        this.seqNum=0;
+        //this.seqNum=0;
+        this.destToSequence = new HashMap<Short,Integer>();
         this.ackFlag = ackFlag;
     }
 
@@ -41,76 +45,16 @@ public class Sender<Final> implements Runnable {
         datapck = null;
         retry = false;
         retryAttempts = 0;
-        seqNum++;
+
+        //seqNum++;
     }
 
     @Override
     public void run(){
-        //testing thread
-//        while(true) {
-//            System.out.println("Sender thread running.");
-//            try {
-//                Transmission data = dataOutgoing.take();
-//                byte[] bytedata = data.getBuf();
-//                Packet pck = new Packet(000,0,0,data.getDestAddr(),data.getSourceAddr(),bytedata,bytedata.length);
-//                System.out.println("have created a packet pck : "+ pck);
-//                //todo: check if idle before transmit and only send once it is Idle (is WITHIN scope of CP#2)
-//                while((theRF.inUse())) {
-//                    output.println("Channel In use Waiting 2 seconds");
-//                    sleep(2000);
-//                }
-//                byte[] frame = pck.getFrame();
-//                output.println("Last byte of data: " + frame[frame.length-5]);
-//                theRF.transmit(frame); //Sent off frame to recv() to be picked up by Recv() class
-//                System.out.println("have Transmitted the PCK");
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-        //Wait for something to arrive on the outgoing data queue
-        //Data arrives:
-            //Make packet
-            //Check if medium idle
-            //not idle:
 
-                //wait until idle
-                //channel is idle:
-                    //wait DIFS
-                    //channel still idle:
-                        //wait exponential backoff time
-                        //channel interrupted:
-                            //save exponential timer state
-                            //go back to wait DIFS step
-                        //exponential timer finished:
-                            //transmit frame
-                            //wait for an ack
-                            //ack received:
-                                //set fully idle to false
-                                //go back to beginning
-                            //ack not received in time:
-                                //up contention window
-                                //set retry to true
-                                //go back to beginning, new packet out of same data from before
-                    //channel not still idle:
-                        //back to waiting for channel to be idle
-
-
-            //idle:
-                //fullyIdle = true;
-                //wait DIFS
-                //time elapsed & medium idle:
-                    //transmit packet
-                    //wait for an ack
-                    //ack received:
-                        //set fully idle to false
-                        //go back to beginning
-                    //ack not received in time:
-                        //up contention window
-                        //set retry to true
-                        //go back to beginning, new packet out of same data from before
-
-        // switch statement using above comment as reference // beyond scope of CP#2 but good to look at.
+        // State Machine for 802.11~ sender
         Wait waiting = new Wait(32,theRF.aCWmin,100);
+        //determines whether or not we are in the middle of an expontential backoff countdown
         boolean setBackoff = true;
         while(true) {
             if (setBackoff) {
@@ -118,13 +62,6 @@ public class Sender<Final> implements Runnable {
             }
             switch (state) {
                 case WAITING_4_DATA:
-                    //look for data to send
-                    //OLD WAY OF KEEPING OLD DATA AROUND
-                   /* Transmission data = dataOutgoing.peek();
-                    if (data == null) {
-//                        continue;
-                        break;
-                    }*/
                    //BRAND NEW TRANSMISSION
                    if(datapck==null) {
                        Transmission data; //holds what we grabbed from queue
@@ -136,8 +73,16 @@ public class Sender<Final> implements Runnable {
                        }
 
                        //create data packet from our newest transmission
-                       this.datapck = new Packet(000, 0, seqNum, data.getDestAddr(), data.getSourceAddr(), data.getBuf(), data.getBuf().length);
+                       //short src = data.getSourceAddr();
+                       this.dest = data.getDestAddr();
+                       //get sequence number from map or add first entry
+                       if(!destToSequence.containsKey(dest)){
+                           destToSequence.put(dest,0);
+                       }
+                       this.seqNum = destToSequence.get(dest);
+                       this.datapck = new Packet(000, 0, seqNum, dest, mac , data.getBuf(), data.getBuf().length);
                    }
+
                    //RETRY TRANMISSION
                    else {
                        datapck.setRetry(1);
@@ -185,16 +130,17 @@ public class Sender<Final> implements Runnable {
                 case WAITING_DIFS: //this will have the wait Object being used here
                     try {
 //                        sleep(2000);
-                        output.println("WAITIN_DIFS "+waiting.DIFS(theRF)); //todo: remove output when working as intended
+                        if(LinkLayer.debug ==1) output.println("WAITIN_DIFS "+waiting.DIFS(theRF)); //todo: remove output when working as intended
                     } catch (InterruptedException e) {
                         continue;
                     }
-                    //state=WAITING_4_DATA; //todo:remov when machine works
+
                     //time elapsed & medium is not idle
                     if (theRF.inUse()) { //true if line currently in use
                         state = WAITING_4_MED_ACCESS; //wait until line not in use
                         break;
                     }
+
                     //time elapsed & medium is idle & fullyIdle false
                     if (fullyIdle == false && !theRF.inUse()) { //good the line not in use start backoff
                                                                 //If fullyIdle is false then must be right branch of MAC rules
@@ -211,13 +157,15 @@ public class Sender<Final> implements Runnable {
                 case WAITING_BACKOFF: //almost always transmit when this is called
                     //timer elapsed in wait object
                     try {
-                        output.println("Total CountDown "+ waiting.getCD());
+                        if(LinkLayer.debug ==1) output.println("Starting an ExBackoff CountDown from "+ waiting.getCD());
+
                         int remainingCountDown = waiting.BackoffWindow(theRF);
                         setBackoff = false; //WE DON'T WANT TO RERANDOMIZE COUNTDOWN
-                        output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
+
+                        if(LinkLayer.debug ==1)output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
                         if (remainingCountDown != 0) { //Line was in use while waiting backoff go back to waiting 4 med access
                             state = WAITING_4_MED_ACCESS;
-                            output.println("CountDown was Interrupted");
+                            if(LinkLayer.debug ==1) output.println("CountDown was Interrupted");
                             break;
                         }
                         theRF.transmit(datapck.getFrame());
@@ -237,62 +185,52 @@ public class Sender<Final> implements Runnable {
                     }
                     boolean ackReceived = false;
                     setBackoff = true; //We want to rerandomize countdown after we leave this state
-                    output.println("Transmitted packet #" + seqNum + ". Waiting Ack.");
+                    if(LinkLayer.debug ==1) output.println("Transmitted packet #" + seqNum + ". Waiting Ack.");
                     //start a timer
                     //while(timer not elapsed && theRF.dataWaiting())
+
+                    //Wait for Receiver to show us that an Ack Has been received, make sure it is correct one
                     waiting.setAckcd(waiting.getAcktimeout());
                     while(waiting.WaitForAck() > 0) { //todo: MOVE THIS INTO RECEIVER THREAD
                         if(ackFlag.get()>=0) { //when ackFlag is set, compare sequence numbers
-                            output.println("Picking up a possible ack...");
-                            //byte[] possibleAck = theRF.receive();
-                            int seqNum = ackFlag.get();
-                            //output.println("sender saw ackFlag, sequence number of " + seqNum);
-                            //int dest = Packet.extractdest(possibleAck);
-                            //ACK was for us!!!!!!!!!
-                            if(seqNum==this.seqNum){
+                            if(LinkLayer.debug ==1) output.println("Sender Checking a possible ack...");
+                            int ackseqNum = ackFlag.get();
+                            if(ackseqNum==this.seqNum){ //ACK was for us!!!!!!!!!
                                 ackReceived = true;
-                                output.println("AckRecv = "+ackReceived);
+                                if(LinkLayer.debug ==1) output.println("Ack " + seqNum + " Received");
                                 break;
                             }
                         }
                     }
+                    //reset for next ack
                     ackFlag.set(-1);
-                    //ack received
+
+                    //ACK received
                     if(ackReceived) {
-                        output.println("ACK RECEIVED");
+                        if(LinkLayer.debug==1) output.println("ACK RECEIVED");
                         resetTransmission();
                         waiting.resetWindow();
+                        destToSequence.replace(dest,seqNum+1); //increment sequence number
                         state = WAITING_4_DATA;
                         break;
-                    //no ack received - might need to retry
+                    //no ACK received - might need to retry and double contention window
                     } else {
-                        output.println("Ack not received....going back to waiting for data");
+                        if(LinkLayer.debug==1) output.println("Ack not received....going back to waiting for data");
+
                         waiting.setWindow(waiting.getWindow()*2);
-                        output.println("Doubled Window to "+ waiting.getWindow());
+
+                        if(LinkLayer.debug==1)output.println("Doubled Window to "+ waiting.getWindow());
                         retry = true;
                         ++retryAttempts;
-                        if (retryAttempts > theRF.dot11RetryLimit) { //This is a full reset
+                        //Reached retry limit, reset eveverything
+                        if (retryAttempts > theRF.dot11RetryLimit) {
                             resetTransmission();
                         }
                         state = WAITING_4_DATA;
                         break;
-                        //ack not received in time:
-                        //reset everything if retry limit is reached
-                        //otherwise
-                        //up contention window
-                        //set retry to true
-                        //increment retries
 
-                        //go back to beginning, new packet out of same data from before
                     }
-
-
-
-                    //maybe?
-                    //here we will remove or take from the Queue depending on if Ack was received or retransmit
-                    //break;
             }
-//            System.out.println(state);
         }
     }
 }

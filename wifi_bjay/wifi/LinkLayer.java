@@ -8,6 +8,7 @@ import rf.RF;
 
 import static java.lang.Thread.sleep;
 
+
 /**
  * Use this layer as a starting point for your project code.  See {@link Dot11Interface} for more
  * details on these routines.
@@ -23,9 +24,11 @@ public class LinkLayer implements Dot11Interface
 	private ArrayBlockingQueue<Transmission> dataOutgoing = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 	private ArrayBlockingQueue<Transmission> dataIncoming = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 	private AtomicInteger ackFlag; //alerts sender thread of an ack and sends its sequence number
+    public static int debug = 0; //0 is no output, 1 is full output
 
 
-	/**
+
+    /**
 	 * Constructor takes a MAC address and the PrintWriter to which our output will
 	 * be written.
 	 * @param ourMAC  MAC address
