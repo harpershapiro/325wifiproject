@@ -34,7 +34,7 @@ public class Wait { //A class with all the wait's we will use for this project
     }
 
     public void setRanBackoff() {
-        this.countDown = (int) (Math.random() * window);
+        this.countDown = (int) (Math.random() * (window+1));
     }
 
     public void resetWindow(){

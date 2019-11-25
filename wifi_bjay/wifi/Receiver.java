@@ -86,9 +86,11 @@ public class Receiver implements Runnable {
     public void run(){
         byte[] rec_frame; //variable to store our receipt from RF layer
         byte[] data;
+        boolean duplicateData;
 
         while(true) {
             //check if there is some data to receive, sleep for a bit otherwise
+            duplicateData = false; //we want to make sure  not to deliver duplicates
             if(LinkLayer.debug==1) output.println("RECV Waiting for packets");
             while(!theRF.dataWaiting()){
                 try {
@@ -120,7 +122,7 @@ public class Receiver implements Runnable {
 
 
             //CHECK if Data is actually for us (either broadcast address or our personal MAC)
-            if (dest == mac || dest == -1) {
+            if (dest == (short)mac || dest == -1) {
 
                 //Check for any gaps and update sequence number map
                 if(!srcToSequence.containsKey(src)){
@@ -129,6 +131,7 @@ public class Receiver implements Runnable {
                 int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM);
                 int prevSeqNum = srcToSequence.get(src);//ACK packet will hold the seqNum we received
                 if(prevSeqNum<seqNum-1 && dest!=-1) output.println("WARNING: Packet may have been lost.");
+                else if(prevSeqNum==seqNum) duplicateData = true;
                 srcToSequence.replace(src,seqNum+1);
 
                 Transmission rec_trans = new Transmission((short)dest,(short)src,data);
@@ -136,9 +139,8 @@ public class Receiver implements Runnable {
 
                 //SEND AN ACK
                 if(dest!=-1) {
-                    if(LinkLayer.debug==1) output.println("Adding sequence number " + seqNum + " to an ACK");
                     Packet ack = new Packet(1, 0, seqNum, src, dest, new byte[0], 0);
-                    if(LinkLayer.debug==1)output.println("Sending an ACK to " + dest + " for "+seqNum);
+                    if(LinkLayer.debug==1)output.println("Sending an ACK to " + dest + " for sequence #"+seqNum);
                     //WAIT SIFS
                     try {
                         sleep(RF.aSIFSTime); //todo: create waiting object and call sifs
@@ -148,7 +150,7 @@ public class Receiver implements Runnable {
                     theRF.transmit(ack.getFrame());
                 }
                 //Deliver data
-                dataIncoming.add(rec_trans);
+                if(!duplicateData) dataIncoming.add(rec_trans);
             }
         }
     }

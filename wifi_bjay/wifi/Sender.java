@@ -1,4 +1,6 @@
 package wifi;
+import rf.RF;
+
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -114,23 +116,11 @@ public class Sender<Final> implements Runnable {
                         //from difs state we wait have two options (1 wait4MedAcc, 2 backoff window)
                         break;
                     }
-                    //below logic has been moved to DIFS or Backoff state
-                    //then transmit packet set state to waiting4ack
-//                    if (fullyIdle == true) {
-//                        theRF.transmit(datapck.getFrame());
-//                        state = WAITING_4_ACK;
-//                        break;
-//                    }
-                    //else wait exponential backoff time
-//                    else {
-                            //channel interrupted:
-                            //save exponential timer state
-                            //set state to WAITING_4_MED_ACCESS again and loop
-//                    }
+
                 case WAITING_DIFS: //this will have the wait Object being used here
                     try {
 //                        sleep(2000);
-                        if(LinkLayer.debug ==1) output.println("WAITIN_DIFS "+waiting.DIFS(theRF)); //todo: remove output when working as intended
+                        if(LinkLayer.debug ==1) output.println("Waiting DIFS... "+waiting.DIFS(theRF)); //todo: remove output when working as intended
                     } catch (InterruptedException e) {
                         continue;
                     }
@@ -216,8 +206,12 @@ public class Sender<Final> implements Runnable {
                     //no ACK received - might need to retry and double contention window
                     } else {
                         if(LinkLayer.debug==1) output.println("Ack not received....going back to waiting for data");
-
-                        waiting.setWindow(waiting.getWindow()*2);
+                        int newWindow = ((waiting.getWindow()+1)*2)-1;
+                        if(newWindow> RF.aCWmax) {
+                            waiting.setWindow(RF.aCWmax);
+                        } else {
+                            waiting.setWindow(newWindow);
+                        }
 
                         if(LinkLayer.debug==1)output.println("Doubled Window to "+ waiting.getWindow());
                         retry = true;
@@ -225,6 +219,8 @@ public class Sender<Final> implements Runnable {
                         //Reached retry limit, reset eveverything
                         if (retryAttempts > theRF.dot11RetryLimit) {
                             resetTransmission();
+                            waiting.resetWindow();
+                            destToSequence.replace(dest,seqNum+1); //increment sequence number
                         }
                         state = WAITING_4_DATA;
                         break;
