@@ -101,8 +101,12 @@ public class Sender<Final> implements Runnable {
                         //go back to beginning, new packet out of same data from before
 
         // switch statement using above comment as reference // beyond scope of CP#2 but good to look at.
-        Wait waiting = new Wait(32);
+        Wait waiting = new Wait(32,theRF.aCWmin);
+        boolean setBackOff = true;
         while(true) {
+            if (setBackOff) {
+                waiting.setRanBackoff(); //each loop we set the Window backoff size to use this loop (we reloop when this changes anyway so its safe)
+            }
             switch (state) {
                 case WAITING_4_DATA:
                     //look for data to send
@@ -143,7 +147,7 @@ public class Sender<Final> implements Runnable {
                     }
 
                 case WAITING_4_MED_ACCESS:
-                    output.println("WAITING_4_MED_ACCESS:"); //todo: remove output when working as intended
+//                    output.println("WAITING_4_MED_ACCESS:"); //todo: remove output when working as intended
 //                    state=WAITING_4_DATA;
 //                    break;
                     //check if RF in use, If false then line not in use wait DIFS
@@ -198,7 +202,14 @@ public class Sender<Final> implements Runnable {
                 case WAITING_BACKOFF: //almost always transmit when this is called
                     //timer elapsed in wait object
                     try {
-                        output.println("WAITING_BACKOFF "+waiting.BackoffWindow(theRF)); //todo: remove output when working as intended
+                        output.println("Total CountDown "+ waiting.getCD());
+                        int remainingCountDown = waiting.BackoffWindow(theRF);
+                        output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
+                        if (remainingCountDown != 0) { //Line was in use while waiting backoff go back to waiting 4 med access
+                            state = WAITING_4_MED_ACCESS;
+                            output.println("CountDown was Interrupted");
+                            break;
+                        }
                         theRF.transmit(datapck.getFrame());
                         state = WAITING_4_ACK;
                         break;
@@ -229,7 +240,7 @@ public class Sender<Final> implements Runnable {
                         }
                         //sleep a little
                         try {
-                            sleep(100);
+                            sleep(100); //todo: fix interval
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -248,6 +259,18 @@ public class Sender<Final> implements Runnable {
                         break;
                     } else {
                         output.println("Ack not received....going back to waiting for data");
+                        waiting.setWindow(waiting.getWindow()*2);
+                        output.println("Doubled Window to "+ waiting.getWindow());
+                        retry = true;
+                        ++retryAttempts;
+                        if (retryAttempts > theRF.dot11RetryLimit) { //This is a full reset
+                            fullyIdle = false;
+                            //set datapck to null
+                            datapck = null;
+                            retry = false;
+                            retryAttempts = 0;
+                            seqNum++;
+                        }
                         state = WAITING_4_DATA;
                         break;
                         //ack not received in time:

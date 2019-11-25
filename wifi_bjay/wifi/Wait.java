@@ -6,11 +6,31 @@ import static java.lang.Thread.sleep;
 
 
 public class Wait { //A class with all the wait's we will use for this project
-    int countDown;
-    public Wait (int countDown) { //todo: make an wait Object for threads to call upon to wait
+    private int countDown;
+    private int window;
+    public Wait (int countDown, int window) { //todo: make an wait Object for threads to call upon to wait
+        this.countDown = countDown;
+        this.window = window;
+    }
+
+    public int getWindow() {
+        return window;
+    }
+    public int getCD() {
+        return countDown;
+    }
+
+    public void setCountDown(int countDown) {
         this.countDown = countDown;
     }
 
+    public void setWindow(int window) {
+        this.window = window;
+    }
+
+    public void setRanBackoff() {
+        this.countDown = (int) (Math.random() * window);
+    }
 
     /**
      * @param theRF is what we call to get info like SIFS time
@@ -44,12 +64,18 @@ public class Wait { //A class with all the wait's we will use for this project
      */
     public int BackoffWindow(RF theRF) throws InterruptedException {
         int singleSlotTime = theRF.aSlotTime;
-        int totalWait = countDown*singleSlotTime;
+        //setRanBackoff(); //do this in sender (done)
+        System.out.println("BackOff calc'ed CountDown "+ countDown);
+        int totalWait = countDown*singleSlotTime; //used for testing
         //todo: Add if interrupted logic as in save current countDown for later (might happen automatically with --;)
-            while(countDown >= 0) {
+            while(countDown > 0) {
                 sleep(singleSlotTime); //wait A slot time amount
-                countDown--;           //then reduce the remaining "window" via countDown--
+                countDown--;           //then reduce the remaining fake "window" via countDown--
+                if (theRF.inUse()) {
+                    break;//return countDown;
+
+                }
             }
-        return totalWait; //Return how long we waited in total
+        return countDown; //Return how long we waited in total
     }
 }

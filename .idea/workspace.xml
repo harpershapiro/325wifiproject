@@ -4,10 +4,10 @@
     <list default="true" id="d8837b48-c84e-4b3a-aec6-b5367d52a3a5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Packet.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Packet.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" afterDir="false" />
     </list>

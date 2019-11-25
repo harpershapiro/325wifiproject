@@ -90,7 +90,7 @@ public class Receiver implements Runnable {
             output.println("RECV Waiting for packets");
             while(!theRF.dataWaiting()){
                 try {
-                    sleep(50); //not sure how long to sleep yet
+                    sleep(50); //todo: look at datamations and find out how long to wait (add to waiting object)
                 } catch (InterruptedException e){
                     continue; //just go back to top if this didn't work
                 }
@@ -129,7 +129,7 @@ public class Receiver implements Runnable {
                     output.println("Sending an ACK for "+seqNum);
                     //WAIT SIFS
                     try {
-                        sleep(RF.aSIFSTime);
+                        sleep(RF.aSIFSTime); //todo: create waiting object and call sifs
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
