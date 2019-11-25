@@ -111,11 +111,12 @@ public class Receiver implements Runnable {
 
             //Package data for delivery
             data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
-            int dest = Packet.extractdest(rec_frame);
-            int src = Packet.extractsrc(rec_frame);
+            short dest = (short)Packet.extractdest(rec_frame);
+            output.println("Receiver extracted " + dest + " from incoming frame.");
+            short src = (short)Packet.extractsrc(rec_frame);
             Transmission rec_trans = new Transmission((short)dest,(short)src,data); //todo: change (short)-1's to there proper values (done)
 
-            //CHECK if Data is actually for us
+            //CHECK if Data is actually for us (either broadcast address or our personal MAC)
             if (dest == mac || dest == -1) {
 
                 //short control = (short)(((rec_frame[0] & 0xFF) << 8) | (rec_frame[1] & 0xFF)); // DO WE NEED THIS?

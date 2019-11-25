@@ -32,6 +32,11 @@ public class Wait { //A class with all the wait's we will use for this project
         this.countDown = (int) (Math.random() * window);
     }
 
+    public void resetWindow(){
+        this.window = RF.aCWmin;
+    }
+
+
     /**
      * @param theRF is what we call to get info like SIFS time
      * @return an int of how long to wait. (the wait can happen here or where it is called)

@@ -6,6 +6,8 @@ public class Packet {
     public static final int HDRBYTES =  NUM_CONTROL_BYTES+DEST_ADDR_BYTES+SRC_ADDR_BYTES;
     public static final int NON_DATA_BYTES = HDRBYTES+CRC_BYTES;
     public static final int FRAME_TYPE=0, RETRY=1, SEQ_NUM=2;
+    public static final int MAX_SHORT_VALUE = 65535;
+
 
     private int frameType;
     private int retry;
@@ -32,7 +34,7 @@ public class Packet {
 
     public static int extractdest(byte[] b) {
         int dest = 0;
-        dest=  ((b[2] & 0xff) << 8);   //is the short value of dest from packet
+        dest = ((b[2] & 0xff) << 8);   //is the short value of dest from packet
         dest = ((b[3] & 0xff) | dest);
         return dest;
     }
@@ -105,6 +107,10 @@ public class Packet {
         frame = fillCheckSum(frame);
 
         return frame;
+    }
+
+    public int getDest(){
+        return dest;
     }
 
     /**

@@ -35,6 +35,15 @@ public class Sender<Final> implements Runnable {
         this.ackFlag = ackFlag;
     }
 
+    public void resetTransmission(){
+        fullyIdle = false;
+        //set datapck to null
+        datapck = null;
+        retry = false;
+        retryAttempts = 0;
+        seqNum++;
+    }
+
     @Override
     public void run(){
         //testing thread
@@ -102,9 +111,9 @@ public class Sender<Final> implements Runnable {
 
         // switch statement using above comment as reference // beyond scope of CP#2 but good to look at.
         Wait waiting = new Wait(32,theRF.aCWmin);
-        boolean setBackOff = true;
+        boolean setBackoff = true;
         while(true) {
-            if (setBackOff) {
+            if (setBackoff) {
                 waiting.setRanBackoff(); //each loop we set the Window backoff size to use this loop (we reloop when this changes anyway so its safe)
             }
             switch (state) {
@@ -204,6 +213,7 @@ public class Sender<Final> implements Runnable {
                     try {
                         output.println("Total CountDown "+ waiting.getCD());
                         int remainingCountDown = waiting.BackoffWindow(theRF);
+                        setBackoff = false; //WE DON'T WANT TO RERANDOMIZE COUNTDOWN
                         output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
                         if (remainingCountDown != 0) { //Line was in use while waiting backoff go back to waiting 4 med access
                             state = WAITING_4_MED_ACCESS;
@@ -220,7 +230,13 @@ public class Sender<Final> implements Runnable {
                         //break;
                     }
                 case WAITING_4_ACK: //not a wait Object thing but an RF thingy
+                    if((short)datapck.getDest()==-1){
+                        resetTransmission();
+                        state = WAITING_4_DATA;
+                        break;
+                    }
                     boolean ackReceived = false;
+                    setBackoff = true; //We want to rerandomize countdown after we leave this state
                     output.println("Transmitted packet #" + seqNum + ". Waiting Ack.");
                     //start a timer
                     //while(timer not elapsed && theRF.dataWaiting())
@@ -246,17 +262,14 @@ public class Sender<Final> implements Runnable {
                         }
                         timer--;
                     }
-                    //ack received:
+                    //ack received
                     if(ackReceived) {
                         output.println("ACK RECEIVED");
-                        //set fully idle to false
-                        fullyIdle = false;
-                        //set datapck to null
-                        datapck = null;
-                        //increment seq number
-                        seqNum++;
+                        resetTransmission();
+                        waiting.resetWindow();
                         state = WAITING_4_DATA;
                         break;
+                    //no ack received - might need to retry
                     } else {
                         output.println("Ack not received....going back to waiting for data");
                         waiting.setWindow(waiting.getWindow()*2);
@@ -264,12 +277,7 @@ public class Sender<Final> implements Runnable {
                         retry = true;
                         ++retryAttempts;
                         if (retryAttempts > theRF.dot11RetryLimit) { //This is a full reset
-                            fullyIdle = false;
-                            //set datapck to null
-                            datapck = null;
-                            retry = false;
-                            retryAttempts = 0;
-                            seqNum++;
+                            resetTransmission();
                         }
                         state = WAITING_4_DATA;
                         break;
