@@ -110,7 +110,7 @@ public class Sender<Final> implements Runnable {
                         //go back to beginning, new packet out of same data from before
 
         // switch statement using above comment as reference // beyond scope of CP#2 but good to look at.
-        Wait waiting = new Wait(32,theRF.aCWmin);
+        Wait waiting = new Wait(32,theRF.aCWmin,100);
         boolean setBackoff = true;
         while(true) {
             if (setBackoff) {
@@ -240,8 +240,8 @@ public class Sender<Final> implements Runnable {
                     output.println("Transmitted packet #" + seqNum + ". Waiting Ack.");
                     //start a timer
                     //while(timer not elapsed && theRF.dataWaiting())
-                    int timer = 20; //TESTING TIMER>....................................................
-                    while(timer>0){ //todo: MOVE THIS INTO RECEIVER THREAD
+                    waiting.setAckcd(waiting.getAcktimeout());
+                    while(waiting.WaitForAck() > 0) { //todo: MOVE THIS INTO RECEIVER THREAD
                         if(ackFlag.get()>=0) { //when ackFlag is set, compare sequence numbers
                             output.println("Picking up a possible ack...");
                             //byte[] possibleAck = theRF.receive();
@@ -251,17 +251,12 @@ public class Sender<Final> implements Runnable {
                             //ACK was for us!!!!!!!!!
                             if(seqNum==this.seqNum){
                                 ackReceived = true;
+                                output.println("AckRecv = "+ackReceived);
                                 break;
                             }
                         }
-                        //sleep a little
-                        try {
-                            sleep(100); //todo: fix interval
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        timer--;
                     }
+                    ackFlag.set(-1);
                     //ack received
                     if(ackReceived) {
                         output.println("ACK RECEIVED");

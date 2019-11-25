@@ -2,15 +2,20 @@ package wifi;
 
 import rf.RF;
 
+import static java.lang.Thread.dumpStack;
 import static java.lang.Thread.sleep;
 
 
 public class Wait { //A class with all the wait's we will use for this project
     private int countDown;
     private int window;
-    public Wait (int countDown, int window) { //todo: make an wait Object for threads to call upon to wait
+    private int acktimeout; //this is the number of slots we wait 50mil in each slot (sleep a total of 5000mil) at 50mil intervals
+    private int ackcd;      //the var we count down how much we have slepted so far
+    public Wait (int countDown, int window,int acktimeout) { //todo: make an wait Object for threads to call upon to wait
         this.countDown = countDown;
         this.window = window;
+        this.acktimeout = acktimeout;
+        this.ackcd = acktimeout;
     }
 
     public int getWindow() {
@@ -34,6 +39,31 @@ public class Wait { //A class with all the wait's we will use for this project
 
     public void resetWindow(){
         this.window = RF.aCWmin;
+    }
+
+    public void setAcktimeout(int setAcktimeout) {
+        this.acktimeout = setAcktimeout;
+    }
+
+    public void setAckcd(int setAckcd) {
+        this.ackcd = setAckcd;
+    }
+
+        public int getAcktimeout() {
+        return acktimeout;
+    }
+
+    public int WaitForAck() {
+//        while(ackcd > 0) {
+            try {
+                sleep(50); //wait A slot time amount
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+//            }
+            }
+        ackcd--;           //then reduce the remaining fake "window" via countDown--
+            System.out.println("AckCD : "+ ackcd);
+        return ackcd;
     }
 
 
