@@ -210,7 +210,7 @@ public class Sender<Final> implements Runnable {
                         break;
                     //no ACK received - might need to retry and double contention window
                     } else {
-                        if(LinkLayer.debug==1) output.println("Ack not received....going back to waiting for data");
+                        if(LinkLayer.debug==1) output.println("Ack not received....need to retry transmission.");
                         int newWindow = ((waiting.getWindow()+1)*2)-1;
                         if(newWindow> RF.aCWmax) {
                             waiting.setWindow(RF.aCWmax);
@@ -223,6 +223,7 @@ public class Sender<Final> implements Runnable {
                         ++retryAttempts;
                         //Reached retry limit, reset eveverything
                         if (retryAttempts > theRF.dot11RetryLimit) {
+                            if(LinkLayer.debug==1) output.println("Retry attempts reached. Discarding packet and resetting backoff window.");
                             resetTransmission();
                             waiting.resetWindow();
                             destToSequence.replace(dest,seqNum+1); //increment sequence number

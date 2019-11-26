@@ -117,7 +117,7 @@ public class Receiver implements Runnable {
             //Package data for delivery
             data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
             short dest = (short)Packet.extractdest(rec_frame);
-            output.println("Receiver extracted " + dest + " from incoming frame.");
+            output.println("Receiver got a data frame sent for " + dest);
             short src = (short)Packet.extractsrc(rec_frame);
 
 
