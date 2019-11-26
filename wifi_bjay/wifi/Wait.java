@@ -2,77 +2,109 @@ package wifi;
 
 import rf.RF;
 
+import static java.lang.Thread.dumpStack;
 import static java.lang.Thread.sleep;
 
+
 public class Wait { //A class with all the wait's we will use for this project
+    private int countDown;
+    private int window;
+    private int acktimeout; //this is the number of slots of size ACK_TIMEOUT_MILLIS for ack countdowns
+    private int ackcd;      //the var we count down how much we have slepted so far
+    private RF theRF;
 
-    public Wait (int countDown) { //todo: make an wait Object for threads to call upon to wait
+    public static final int ACK_TIMEOUT_MILLIS = 50;
+    public Wait (RF theRF, int window,int acktimeout) { //todo: make an wait Object for threads to call upon to wait
+        this.countDown = 0; //default to 0
+        this.theRF = theRF;
+        this.window = window;
+        this.acktimeout = acktimeout;
+        this.ackcd = acktimeout;
+    }
 
+    public int getWindow() {
+        return window;
+    }
+    public int getCD() {
+        return countDown;
+    }
+
+
+    public void setWindow(int window) {
+        this.window = window;
+    }
+
+    public void setRanBackoff() {
+        this.countDown = (int) (Math.random() * (window+1));
+    }
+
+    public void resetWindow(){
+        this.window = RF.aCWmin;
+    }
+
+    public void setAcktimeout(int setAcktimeout) {
+        this.acktimeout = setAcktimeout;
+    }
+
+    public void setAckcd(int setAckcd) {
+        this.ackcd = setAckcd;
+    }
+
+    public int getAcktimeout() {
+        return acktimeout;
+    }
+
+    public int WaitForAck() {
+        try {
+            sleep(ACK_TIMEOUT_MILLIS); //wait A slot time amount
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            }
+        ackcd--;           //then reduce the remaining fake "window" via countDown--
+        return ackcd;
     }
 
 
     /**
-     * Calling SIFS will return an int of how many mill's to wait. (is also used in the calc of DIFS)
-     * @param theRF
      * @return an int of how long to wait. (the wait can happen here or where it is called)
      */
-    public long SIFS(RF theRF) { //todo: remove the clock based waiting (this and DIFS)
-        //todo: calc SIFS wait timer (maybe done)
-        long calc = theRF.aSIFSTime + theRF.clock(); //is it really this easy??
-        try {
-            while(true) {
-                sleep(50);
-                if (theRF.clock() >= calc) break; //if the clock is beyond our wait time then we must have waited that much time
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return calc;
-    }
-
-    public long DIFS(long end, RF theRF) throws InterruptedException {
-        if (end > 0) { //don't calc new "end" point just continue until we did our hard time
-            while(true) {
-                sleep(50);
-                if (theRF.clock() >= end) break; //if the clock is beyond our wait time then we must have waited that much time
-            }
-            return end;
-        }
-
-        //todo: DIFS = SIFS + 2 windows (aka 2 backoff slots)
-        long calc = (SIFS(theRF) + (theRF.aSlotTime * 2)); //we dont need to add clock because in the SIFS call it is doing it too
-        while(true) {
-            sleep(50);
-            if (theRF.clock() >= calc) break; //if the clock is beyond our wait time then we must have waited that much time
-        }
-        // If sleep interrupted then save current time and when we resume continue with time as start
-        return calc;
-        //we minus by start because if the person got interrupted while waiting they should left off where they started
+    public int SIFS() throws InterruptedException { //todo: remove the clock based waiting (this and DIFS) (done)
+        //todo: calcSifs SIFS wait timer (done)
+        sleep(theRF.aSIFSTime);
+        return theRF.aSIFSTime; //Return how long we waited in total
     }
 
     /**
      *
-     * @param end   If end is greater than 0 then use this is the break case rather than calc new backoff time
-     * @param theRF How we gather info for the vars like max min and clock
+     * @return  how long we waited in total
+     * @throws InterruptedException
+     */
+    public int DIFS() throws InterruptedException {
+        int calcDifs = theRF.aSIFSTime+(theRF.aSlotTime * 2);
+        sleep((calcDifs));
+        return calcDifs; //Return how long we waited in total
+        //todo: DIFS = SIFS + 2 windows (aka 2 backoff slots) (done)
+    }
+
+    /**
+     *
      * @return      The total time we waited.
      * @throws InterruptedException
      */
-    public long BackoffWindow(int end,RF theRF) throws InterruptedException {
-        if (end > 0) { //don't calc new "end" point just continue until we did our hard time
-            while(true) {
-                sleep(50);
-                if (theRF.clock() >= end) break; //if the clock is beyond our wait time then we must have waited that much time
+    public int BackoffWindow() throws InterruptedException {
+        int singleSlotTime = theRF.aSlotTime;
+        //setRanBackoff(); //do this in sender (done)
+        System.out.println("BackOff calc'ed CountDown "+ countDown);
+        int totalWait = countDown*singleSlotTime; //used for testing
+        //todo: Add if interrupted logic as in save current countDown for later (might happen automatically with --;)
+            while(countDown > 0) {
+                sleep(singleSlotTime); //wait A slot time amount
+                countDown--;           //then reduce the remaining fake "window" via countDown--
+                if (theRF.inUse()) {
+                    break;//return countDown;
+
+                }
             }
-            return end;
-        }
-        int max = theRF.aCWmax;
-        int min = theRF.aCWmin;
-        long ranBackoff = (int) (min + (Math.random() * max)); //might be wrong (probably is def wrong)
-        long calc = (theRF.aSlotTime * ranBackoff)+theRF.clock();
-        while(true) {
-            sleep(50);
-            if (theRF.clock() >= calc) break; //if the clock is beyond our wait time then we must have waited that much time
-        }
-        return calc;
+        return countDown; //Return how long we waited in total
     }
 }
