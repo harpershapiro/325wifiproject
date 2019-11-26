@@ -55,7 +55,7 @@ public class Sender<Final> implements Runnable {
     public void run(){
 
         // State Machine for 802.11~ sender
-        Wait waiting = new Wait(32,theRF.aCWmin,100);
+        Wait waiting = new Wait(theRF,theRF.aCWmin,100);
         //determines whether or not we are in the middle of an expontential backoff countdown
         boolean setBackoff = true;
         while(true) {
@@ -69,19 +69,21 @@ public class Sender<Final> implements Runnable {
                        Transmission data; //holds what we grabbed from queue
                        //get next object
                        try {
-                           data = dataOutgoing.take();//todo: remove this line, only need while constructing state machine
+                           data = dataOutgoing.take();//todo: change to a loop with incremental sleep
                        } catch (InterruptedException e) {
                            continue;
                        }
 
-                       //create data packet from our newest transmission
+                       //Get some addresses and upkeep sequence number hashmap
+
                        //short src = data.getSourceAddr();
                        this.dest = data.getDestAddr();
-                       //get sequence number from map or add first entry
                        if(!destToSequence.containsKey(dest)){
                            destToSequence.put(dest,0);
                        }
                        this.seqNum = destToSequence.get(dest);
+
+                       //make our packet to transmit
                        this.datapck = new Packet(000, 0, seqNum, dest, mac , data.getBuf(), data.getBuf().length);
                    }
 
@@ -107,20 +109,24 @@ public class Sender<Final> implements Runnable {
 //                    state=WAITING_4_DATA;
 //                    break;
                     //check if RF in use, If false then line not in use wait DIFS
-                if (theRF.inUse()) {
-                        state = WAITING_4_MED_ACCESS; //keep waiting untail RF is not in use (false)
+                    if (theRF.inUse()) {
+                        try {
+                            sleep(5); //sleep a little to save cpu
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         break;
                     }
-                    else {
+                    else { //channel is free
                         state = WAITING_DIFS;
-                        //from difs state we wait have two options (1 wait4MedAcc, 2 backoff window)
                         break;
                     }
 
-                case WAITING_DIFS: //this will have the wait Object being used here
+                case WAITING_DIFS: //
                     try {
-//                        sleep(2000);
-                        if(LinkLayer.debug ==1) output.println("Waiting DIFS... "+waiting.DIFS(theRF)); //todo: remove output when working as intended
+//                      sleep(2000);
+                        if(LinkLayer.debug ==1) output.println("Waiting DIFS...");
+                        waiting.DIFS();
                     } catch (InterruptedException e) {
                         continue;
                     }
@@ -132,9 +138,8 @@ public class Sender<Final> implements Runnable {
                     }
 
                     //time elapsed & medium is idle & fullyIdle false
-                    if (fullyIdle == false && !theRF.inUse()) { //good the line not in use start backoff
-                                                                //If fullyIdle is false then must be right branch of MAC rules
-                        state = WAITING_BACKOFF;
+                    if (fullyIdle == false && !theRF.inUse()) { //good. line not in use. start backoff.
+                        state = WAITING_BACKOFF;                //If fullyIdle is false then must be right branch of MAC rules
                         break;
                     }
                     //time elapsed & medium idle & fullyIdle
@@ -149,7 +154,7 @@ public class Sender<Final> implements Runnable {
                     try {
                         if(LinkLayer.debug ==1) output.println("Starting an ExBackoff CountDown from "+ waiting.getCD());
 
-                        int remainingCountDown = waiting.BackoffWindow(theRF);
+                        int remainingCountDown = waiting.BackoffWindow();
                         setBackoff = false; //WE DON'T WANT TO RERANDOMIZE COUNTDOWN
 
                         if(LinkLayer.debug ==1)output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended

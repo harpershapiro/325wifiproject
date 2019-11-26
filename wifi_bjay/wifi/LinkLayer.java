@@ -103,6 +103,19 @@ public class LinkLayer implements Dot11Interface
 	 */
 	public int command(int cmd, int val) {
 		output.println("LinkLayer: Sending command "+cmd+" with value "+val);
+		if(cmd==0){
+		    output.println("Command 1: value = [-1 -> debug output] [0 -> no debug output]");
+        }
+		if(cmd==1){
+		    if(val==-1) {
+		        output.println("Full debug output...........activated");
+		        debug=1;
+            }
+		    if(val==0) {
+                output.println("Debug output...........vanquished");
+                debug=0;
+            }
+        }
 		return 0;
 	}
 }

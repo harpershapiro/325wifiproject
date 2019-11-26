@@ -86,6 +86,7 @@ public class Receiver implements Runnable {
     public void run(){
         byte[] rec_frame; //variable to store our receipt from RF layer
         byte[] data;
+        Wait waiting = new Wait(theRF,theRF.aCWmin,100);
         boolean duplicateData;
 
         while(true) {
@@ -126,12 +127,15 @@ public class Receiver implements Runnable {
 
                 //Check for any gaps and update sequence number map
                 if(!srcToSequence.containsKey(src)){
-                    srcToSequence.put(src,0);
+                    srcToSequence.put(src,-1); //we want sequence #0 next... so previous is -1...
                 }
                 int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM);
                 int prevSeqNum = srcToSequence.get(src);//ACK packet will hold the seqNum we received
                 if(prevSeqNum<seqNum-1 && dest!=-1) output.println("WARNING: Packet may have been lost.");
-                else if(prevSeqNum==seqNum) duplicateData = true;
+                else if(prevSeqNum==seqNum){
+                    if(LinkLayer.debug==1) output.println("Duplicate data receieved");
+                    duplicateData = true;
+                }
                 srcToSequence.replace(src,seqNum+1);
 
                 Transmission rec_trans = new Transmission((short)dest,(short)src,data);
@@ -143,13 +147,15 @@ public class Receiver implements Runnable {
                     if(LinkLayer.debug==1)output.println("Sending an ACK to " + dest + " for sequence #"+seqNum);
                     //WAIT SIFS
                     try {
-                        sleep(RF.aSIFSTime); //todo: create waiting object and call sifs
+                        //sleep(RF.aSIFSTime); //todo: create waiting object and call sifs
+                        waiting.SIFS();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     theRF.transmit(ack.getFrame());
                 }
-                //Deliver data
+
+                //DELIVER DATA
                 if(!duplicateData) dataIncoming.add(rec_trans);
             }
         }

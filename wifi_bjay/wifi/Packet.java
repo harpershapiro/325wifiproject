@@ -58,21 +58,16 @@ public class Packet {
         //set value to be the 16 control bits (with 16 left-padded 0s since it's an int)
         value =  ((b[0] & 0xff) << 8);
         value =  ((b[1] & 0xff) | value);
-        System.out.println("Extract control string "+ Integer.toBinaryString(value));
         if (cmd == FRAME_TYPE) {
             value = value >>> 13;
         }
         else if (cmd == RETRY) {
-            System.out.println("Extracting retry, starting with " + Integer.toBinaryString(value));
             value = value << 19;
             value = value >>> 31;
         }
         else if (cmd == SEQ_NUM) {
-            System.out.println("Extracting seqNum, starting with " + Integer.toBinaryString(value));
             value = value << 20;
-            System.out.println("Next " + Integer.toBinaryString(value));
             value = value >>> 20;
-            System.out.println("Finally " + Integer.toBinaryString(value));
 
         } //sorry brad :^ ] (we had to write this)
         return value;
