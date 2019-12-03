@@ -68,10 +68,20 @@ public class Wait { //A class with all the wait's we will use for this project
     /**
      * @return an int of how long to wait. (the wait can happen here or where it is called)
      */
-    public int SIFS() throws InterruptedException { //todo: remove the clock based waiting (this and DIFS) (done)
+    public long SIFS() throws InterruptedException { //todo: remove the clock based waiting (this and DIFS) (done)
         //todo: calcSifs SIFS wait timer (done)
+        long ourTime = 0;
+        //Wait Sifs
         sleep(theRF.aSIFSTime);
-        return theRF.aSIFSTime; //Return how long we waited in total
+        //Now wait until time is within a 50ms window
+        while(true) {
+            if (theRF.clock() % 100 == 50) { //modding by 100 should only return last 2 digits
+                break;
+            }
+        }
+        ourTime = theRF.clock();
+        if(LinkLayer.debug >= 1) System.out.println("Waiting Class after SIFS clock = "+ ourTime);
+        return ourTime; //Return current time (so whom ever called us can update there known time)
     }
 
     /**
@@ -79,10 +89,18 @@ public class Wait { //A class with all the wait's we will use for this project
      * @return  how long we waited in total
      * @throws InterruptedException
      */
-    public int DIFS() throws InterruptedException {
+    public long DIFS() throws InterruptedException {
+        long ourTime = 0;
         int calcDifs = theRF.aSIFSTime+(theRF.aSlotTime * 2);
         sleep((calcDifs));
-        return calcDifs; //Return how long we waited in total
+        while(true) {
+            if (theRF.clock() % 100 == 50) { //modding by 100 should only return last 2 digits
+                break;
+            }
+        }
+        ourTime = theRF.clock();
+        if(LinkLayer.debug >= 1) System.out.println("Waiting Class after DIFS clock = "+ ourTime);
+        return ourTime; //Return current time (so whom ever called us can update there known time)
         //todo: DIFS = SIFS + 2 windows (aka 2 backoff slots) (done)
     }
 
@@ -93,6 +111,7 @@ public class Wait { //A class with all the wait's we will use for this project
      */
     public int BackoffWindow() throws InterruptedException {
         int singleSlotTime = theRF.aSlotTime;
+        long ourTime = 0;
         //setRanBackoff(); //do this in sender (done)
         System.out.println("BackOff calc'ed CountDown "+ countDown);
         int totalWait = countDown*singleSlotTime; //used for testing
@@ -106,6 +125,15 @@ public class Wait { //A class with all the wait's we will use for this project
 
                 }
             }
+        while(true) {
+            if (theRF.clock() % 100 == 50) { //modding by 100 should only return last 2 digits
+                break;
+            }
+        }
+        //todo: unsure if we return clock or countDown as we need to return countDown if we get intrupted so we dont loose that value
+        ourTime = theRF.clock();
+        if(LinkLayer.debug >= 1) System.out.println("Waiting Class after BackOff clock = "+ ourTime);
         return countDown; //Return how long we waited in total
+//        return theRF.clock(); //Return current time (so whom ever called us can update there known time)
     }
 }

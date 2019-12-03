@@ -69,7 +69,7 @@ public class Sender<Final> implements Runnable {
                        Transmission data; //holds what we grabbed from queue
                        //get next object
                        try {
-                           data = dataOutgoing.take();//todo: change to a loop with incremental sleep
+                           data = dataOutgoing.take();//todo: change to a loop with incremental sleep (new as of Final Checkpoint also check Limited Buffering limit)
                        } catch (InterruptedException e) {
                            continue;
                        }
