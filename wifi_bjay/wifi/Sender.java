@@ -133,12 +133,13 @@ public class Sender<Final> implements Runnable {
 
                     //time elapsed & medium is not idle
                     if (theRF.inUse()) { //true if line currently in use
+                        if(LinkLayer.debug ==1) output.println("Channel was in use after DIFS.");
                         state = WAITING_4_MED_ACCESS; //wait until line not in use
                         break;
                     }
 
                     //time elapsed & medium is idle & fullyIdle false
-                    if (fullyIdle == false && !theRF.inUse()) { //good. line not in use. start backoff.
+                    if (!fullyIdle && !theRF.inUse()) { //good. line not in use. start backoff.
                         state = WAITING_BACKOFF;                //If fullyIdle is false then must be right branch of MAC rules
                         break;
                     }

@@ -127,12 +127,12 @@ public class Receiver implements Runnable {
 
                 //Check for any gaps and update sequence number map
                 if(!srcToSequence.containsKey(src)){
-                    srcToSequence.put(src,-1); //we want sequence #0 next... so previous is -1...
+                    srcToSequence.put(src,0); //we want sequence #0 next
                 }
                 int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM);
-                int prevSeqNum = srcToSequence.get(src);//ACK packet will hold the seqNum we received
-                if(prevSeqNum<seqNum-1 && dest!=-1) output.println("WARNING: Packet may have been lost.");
-                else if(prevSeqNum==seqNum){
+                int expectedSeqNum = srcToSequence.get(src);//ACK packet will hold the seqNum we received
+                if(expectedSeqNum<seqNum && dest!=-1) output.println("WARNING: Packet may have been lost.");
+                else if(expectedSeqNum>seqNum){
                     if(LinkLayer.debug==1) output.println("Duplicate data receieved");
                     duplicateData = true;
                 }
@@ -144,7 +144,7 @@ public class Receiver implements Runnable {
                 //SEND AN ACK
                 if(dest!=-1) {
                     Packet ack = new Packet(1, 0, seqNum, src, dest, new byte[0], 0);
-                    if(LinkLayer.debug==1)output.println("Sending an ACK to " + dest + " for sequence #"+seqNum);
+                    if(LinkLayer.debug==1)output.println("Sending an ACK to " + src + " for sequence #"+seqNum);
                     //WAIT SIFS
                     try {
                         //sleep(RF.aSIFSTime); //todo: create waiting object and call sifs

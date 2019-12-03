@@ -98,6 +98,7 @@ public class Wait { //A class with all the wait's we will use for this project
         int totalWait = countDown*singleSlotTime; //used for testing
         //todo: Add if interrupted logic as in save current countDown for later (might happen automatically with --;)
             while(countDown > 0) {
+                System.out.println("sleeping at countdown= "+countDown);
                 sleep(singleSlotTime); //wait A slot time amount
                 countDown--;           //then reduce the remaining fake "window" via countDown--
                 if (theRF.inUse()) {
