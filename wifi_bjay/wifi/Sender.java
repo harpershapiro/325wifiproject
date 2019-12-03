@@ -99,7 +99,7 @@ public class Sender<Final> implements Runnable {
                         break;
                     }
                     else {
-                        fullyIdle = true;
+                        if (!retry) fullyIdle = true; //only fully idle if first try
                         state = WAITING_DIFS;
                         break;
                     }
@@ -221,6 +221,7 @@ public class Sender<Final> implements Runnable {
 
                         if(LinkLayer.debug==1)output.println("Doubled Window to "+ waiting.getWindow());
                         retry = true;
+                        fullyIdle = false;
                         ++retryAttempts;
                         //Reached retry limit, reset eveverything
                         if (retryAttempts > theRF.dot11RetryLimit) {
