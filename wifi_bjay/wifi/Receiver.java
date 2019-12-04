@@ -72,25 +72,26 @@ public class Receiver implements Runnable {
             output.println("Receiver got a data frame sent for " + dest);
             short src = (short)Packet.extractsrc(rec_frame);
 
-            //If it's an Beacon frame then do beacon related things
-            if(true) {//if (Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE) == 2 ) {
-                //todo: Grab data to get "thereTime" value to compare to our own
-                long thereTime = 0;
-                for (int i = 0; i < data.length; i++) //in theory this loop should only happen 8 times (long = 8 bytes)
-                {
-                    thereTime = (thereTime << 8) + (data[i] & 0xff); //converting the byte array to a long value
-                }
-                if(LinkLayer.debug==1) output.println("ThereTime is "+ thereTime);
-                if (ourTime < thereTime) {
-                    ourTime = thereTime; //update ourTime because thereTime is ahead of ours and is more accurate.
-                    if(LinkLayer.debug==1) output.println("OurTime changed too"+ ourTime);
-
-                }
-            }
-            //End Beacon related things
-
             //CHECK if Data is actually for us (either broadcast address or our personal MAC)
             if (dest == (short)mac || dest == -1) {
+
+                //If it's an Beacon frame then do beacon related things
+                if (Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE) == 2 ) {
+                    //todo: Grab data to get "thereTime" value to compare to our own
+                    long thereTime = 0;
+                    for (int i = 0; i < data.length; i++) //in theory this loop should only happen 8 times (long = 8 bytes)
+                    {
+                        thereTime = (thereTime << 8) + (data[i] & 0xff); //converting the byte array to a long value
+                    }
+                    if(LinkLayer.debug>=1) output.println("ourTime is "+ ourTime);
+                    if(LinkLayer.debug>=1) output.println("ThereTime was "+ thereTime);
+                    if (ourTime < thereTime) {
+                        ourTime = thereTime; //update ourTime because thereTime is ahead of ours and is more accurate.
+                        if(LinkLayer.debug>=1) output.println("OurTime changed too "+ ourTime);
+
+                    }
+                }
+                //End Beacon related things
 
                 //Check for any gaps and update sequence number map
                 if(!srcToSequence.containsKey(src)){

@@ -75,8 +75,8 @@ public class Wait { //A class with all the wait's we will use for this project
         sleep(theRF.aSIFSTime);
         //Now wait until time is within a 50ms window
         while(true) {
-            if (theRF.clock() % 100 == 50) { //modding by 100 should only return last 2 digits
-                break;
+            if (theRF.clock() % 100 == 50 || theRF.clock() % 100 == 0) { //modding by 100 should only return last 2 digits
+                break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
         ourTime = theRF.clock();
@@ -94,8 +94,8 @@ public class Wait { //A class with all the wait's we will use for this project
         int calcDifs = theRF.aSIFSTime+(theRF.aSlotTime * 2);
         sleep((calcDifs));
         while(true) {
-            if (theRF.clock() % 100 == 50) { //modding by 100 should only return last 2 digits
-                break;
+            if (theRF.clock() % 100 == 50 || theRF.clock() % 100 == 0) { //modding by 100 should only return last 2 digits
+                break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
         ourTime = theRF.clock();
@@ -126,8 +126,8 @@ public class Wait { //A class with all the wait's we will use for this project
                 }
             }
         while(true) {
-            if (theRF.clock() % 100 == 50) { //modding by 100 should only return last 2 digits
-                break;
+            if (theRF.clock() % 100 == 50 || theRF.clock() % 100 == 0) { //modding by 100 should only return last 2 digits
+                break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
         //todo: unsure if we return clock or countDown as we need to return countDown if we get intrupted so we dont loose that value
