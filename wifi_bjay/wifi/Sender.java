@@ -2,6 +2,7 @@ package wifi;
 import rf.RF;
 
 import java.io.PrintWriter;
+import java.nio.Buffer;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,6 +26,10 @@ public class Sender<Final> implements Runnable {
     private HashMap<Short,Integer> destToSequence; //maps dest to sequence number
     private AtomicInteger ackFlag; //value of the sequence number of an ack received in receiver thread (shared)
 
+    private boolean sendBeacon = false; //every 100ms or so we make this true and when the current packet ends we send beacon frame before grabbing the next data.
+    private long ourTime;
+    private long startT = 0;
+    private long endT = startT; //if endT is more than 100 larger than startT set sendBeacon to true
 
 
     public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF,AtomicInteger ackFlag, PrintWriter output){
@@ -65,11 +70,24 @@ public class Sender<Final> implements Runnable {
             switch (state) {
                 case WAITING_4_DATA:
                    //BRAND NEW TRANSMISSION
-                   if(datapck==null) {
+                    startT = theRF.clock(); //get the clock as we start a new loop
+                    //If sendBeacon is true then we need to send out a beacon before we can accept next data
+                    if(sendBeacon) {
+                        if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
+                        ourTime = theRF.clock();
+                        byte[] ourTime = new byte[8];
+                        for (int i = 7; i >= 0; i--) {
+                            ourTime[i] = (byte)(this.ourTime & 0xFF);
+                            this.ourTime >>= 8;
+                        }
+                        this.datapck = new Packet(2, 0, 0, -1, mac , ourTime, ourTime.length);
+                    }
+                    //End setting up beacon packet proceed with sender's burden logic
+                   else if(datapck==null) {
                        Transmission data; //holds what we grabbed from queue
                        //get next object
                        try {
-                           data = dataOutgoing.take();//todo: change to a loop with incremental sleep
+                           data = dataOutgoing.take();//todo: change to a loop with incremental sleep (new as of Final Checkpoint also check Limited Buffering limit)
                        } catch (InterruptedException e) {
                            continue;
                        }
@@ -105,9 +123,6 @@ public class Sender<Final> implements Runnable {
                     }
 
                 case WAITING_4_MED_ACCESS:
-//                    output.println("WAITING_4_MED_ACCESS:"); //todo: remove output when working as intended
-//                    state=WAITING_4_DATA;
-//                    break;
                     //check if RF in use, If false then line not in use wait DIFS
                     if (theRF.inUse()) {
                         try {
@@ -124,7 +139,6 @@ public class Sender<Final> implements Runnable {
 
                 case WAITING_DIFS: //
                     try {
-//                      sleep(2000);
                         if(LinkLayer.debug ==1) output.println("Waiting DIFS...");
                         waiting.DIFS();
                     } catch (InterruptedException e) {
@@ -177,6 +191,12 @@ public class Sender<Final> implements Runnable {
                     if((short)datapck.getDest()==-1){
                         resetTransmission();
                         state = WAITING_4_DATA;
+                        //Calc if send Beacon or not
+                        endT = theRF.clock(); //set the endT to clock and compare to startT
+                        if(startT+2500 < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        else sendBeacon = false; //if false then we do need to send a Beacon frame
+                        //End if calc beacon
+                        //todo: BAD dont do startT+2500 (2.5 seconds) find a better way to determin how often we send beacons
                         break;
                     }
                     boolean ackReceived = false;
@@ -208,6 +228,11 @@ public class Sender<Final> implements Runnable {
                         waiting.resetWindow();
                         destToSequence.replace(dest,seqNum+1); //increment sequence number
                         state = WAITING_4_DATA;
+                        //Calc if send Beacon or not
+                        endT = theRF.clock(); //set the endT to clock and compare to startT
+                        if(startT+2500 < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        else sendBeacon = false; //if false then we do need to send a Beacon frame
+                        //End if calc beacon
                         break;
                     //no ACK received - might need to retry and double contention window
                     } else {
@@ -231,6 +256,11 @@ public class Sender<Final> implements Runnable {
                             destToSequence.replace(dest,seqNum+1); //increment sequence number
                         }
                         state = WAITING_4_DATA;
+                        //Calc if send Beacon or not
+                        endT = theRF.clock(); //set the endT to clock and compare to startT
+                        if(startT+2500 < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        else sendBeacon = false; //if false then we do need to send a Beacon frame
+                        //End if calc beacon
                         break;
 
                     }

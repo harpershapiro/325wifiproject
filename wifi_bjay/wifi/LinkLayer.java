@@ -41,7 +41,7 @@ public class LinkLayer implements Dot11Interface
 		//TODO: start sender and receiver threads
         this.ackFlag = new AtomicInteger(-1);
 		Sender send = new Sender(ourMAC,dataOutgoing,theRF,ackFlag,output);
-		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming,ackFlag,output);
+		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming,ackFlag,output,theRF.clock());
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
 		output.println("LinkLayer: Constructor ran.");
