@@ -101,7 +101,7 @@ public class Receiver implements Runnable {
                 int expectedSeqNum = srcToSequence.get(src);//ACK packet will hold the seqNum we received
                 if(expectedSeqNum<seqNum && dest!=-1) output.println("WARNING: Packet may have been lost.");
                 else if(expectedSeqNum>seqNum){
-                    if(LinkLayer.debug==1) output.println("Duplicate data receieved");
+                    if(LinkLayer.debug==1) output.println("Duplicate data received");
                     duplicateData = true;
                 }
                 srcToSequence.replace(src,seqNum+1);

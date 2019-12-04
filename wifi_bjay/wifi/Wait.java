@@ -12,6 +12,7 @@ public class Wait { //A class with all the wait's we will use for this project
     private int acktimeout; //this is the number of slots of size ACK_TIMEOUT_MILLIS for ack countdowns
     private int ackcd;      //the var we count down how much we have slepted so far
     private RF theRF;
+    //todo: could add the time variable as global
 
     public static final int ACK_TIMEOUT_MILLIS = 50;
     public Wait (RF theRF, int window,int acktimeout) { //todo: make an wait Object for threads to call upon to wait
@@ -79,6 +80,7 @@ public class Wait { //A class with all the wait's we will use for this project
                 break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
+        //todo: store the variable inside the while loop right before breaking. clock might return something different if we store it here
         ourTime = theRF.clock();
         if(LinkLayer.debug >= 1) System.out.println("Waiting Class after SIFS clock = "+ ourTime);
         return ourTime; //Return current time (so whom ever called us can update there known time)
@@ -98,6 +100,7 @@ public class Wait { //A class with all the wait's we will use for this project
                 break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
+        //todo: store variable within while loop before break (same as sifs)
         ourTime = theRF.clock();
         if(LinkLayer.debug >= 1) System.out.println("Waiting Class after DIFS clock = "+ ourTime);
         return ourTime; //Return current time (so whom ever called us can update there known time)

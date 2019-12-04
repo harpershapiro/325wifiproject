@@ -44,6 +44,8 @@ public class LinkLayer implements Dot11Interface
 		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming,ackFlag,output,theRF.clock());
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
+		output.println("Starting beacon test...");
+		beaconTest();
 		output.println("LinkLayer: Constructor ran.");
 	}
 
@@ -117,5 +119,22 @@ public class LinkLayer implements Dot11Interface
             }
         }
 		return 0;
+	}
+
+	//sends beacon frames and determines avg time
+	private void beaconTest(){
+		//beacon frames bypass the queue so just directly send one
+		long startTime = theRF.clock();
+		int numTransmissions = 10;
+		for(int i=0;i<numTransmissions;i++) {
+			//make new packet with beacon frame
+			Packet beacon = new Packet(2,0,0,-1,ourMAC,new byte[0],0);
+			theRF.transmit(beacon.getFrame());
+			//transmit
+		}
+		long endTime = theRF.clock();
+		long avgTime = (endTime-startTime)/numTransmissions;
+		output.println("AVG beacon transmission time: " + avgTime + "ms");
+
 	}
 }
