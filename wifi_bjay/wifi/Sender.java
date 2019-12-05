@@ -85,12 +85,29 @@ public class Sender<Final> implements Runnable {
                     //End setting up beacon packet proceed with sender's burden logic
                    else if(datapck==null) {
                        Transmission data; //holds what we grabbed from queue
-                       //get next object
-                       try {
-                           data = dataOutgoing.take();//todo: change to a loop with incremental sleep (new as of Final Checkpoint also check Limited Buffering limit)
-                       } catch (InterruptedException e) {
-                           continue;
-                       }
+                       //Carefully look for data to send and determine if Beacon must be sent
+                        while(true) {
+                            try {
+                                data = dataOutgoing.peek();
+                                //Check for beacon
+                                endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
+                                if (startT + LinkLayer.getBeaconBackoff() < endT) {
+                                    sendBeacon = true;
+                                    break; //ignore any data we saw and go to Beacon case
+                                } else sendBeacon = false;
+
+                                //non-Beacon case : take the data
+                                if (data != null) {
+                                    data = dataOutgoing.take();
+                                    break;
+                                } else {
+                                    continue;
+                                }
+                            } catch (InterruptedException e) {
+                                continue;
+                            }
+                        }
+                        if(sendBeacon) break; //SORRY but we need to go back to the top.
 
                        //Get some addresses and upkeep sequence number hashmap
 
@@ -189,11 +206,13 @@ public class Sender<Final> implements Runnable {
                     }
                 case WAITING_4_ACK: //not a wait Object thing but an RF thingy
                     if((short)datapck.getDest()==-1){
+                        if(LinkLayer.debug==1) output.println("Broadcast was sent.");
                         resetTransmission();
                         state = WAITING_4_DATA;
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
-                        if(startT+ LinkLayer.getBeaconBackoff() < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        if(startT+ LinkLayer.getBeaconBackoff() <
+                                endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
                         //End if calc beacon
                         //todo: BAD dont do startT+2500 (2.5 seconds) find a better way to determin how often we send beacons

@@ -71,37 +71,37 @@ public class Wait { //A class with all the wait's we will use for this project
      */
     public long SIFS() throws InterruptedException { //todo: remove the clock based waiting (this and DIFS) (done)
         //todo: calcSifs SIFS wait timer (done)
-        long ourTime = 0;
+        long ourTime;
         //Wait Sifs
         sleep(theRF.aSIFSTime);
         //Now wait until time is within a 50ms window
         while(true) {
-            if (LinkLayer.getClock() % 100 == 50 || LinkLayer.getClock() % 100 == 0) { //modding by 100 should only return last 2 digits
+            ourTime = LinkLayer.getClock();
+            if (ourTime % 100 == 50 || ourTime % 100 == 0) { //modding by 100 should only return last 2 digits
                 break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
-        //todo: store the variable inside the while loop right before breaking. clock might return something different if we store it here
-        ourTime = LinkLayer.getClock();
+        //ourTime = LinkLayer.getClock();
         if(LinkLayer.debug >= 1) System.out.println("Waiting Class after SIFS clock = "+ ourTime);
         return ourTime; //Return current time (so whom ever called us can update there known time)
     }
 
     /**
-     *
+     * Waits DIFS, rounding to 50ms slots
      * @return  how long we waited in total
      * @throws InterruptedException
      */
     public long DIFS() throws InterruptedException {
-        long ourTime = 0;
+        long ourTime;
         int calcDifs = theRF.aSIFSTime+(theRF.aSlotTime * 2);
         sleep((calcDifs));
         while(true) {
-            if (LinkLayer.getClock() % 100 == 50 || LinkLayer.getClock() % 100 == 0) { //modding by 100 should only return last 2 digits
+            ourTime = LinkLayer.getClock();
+            if (ourTime % 100 == 50 || ourTime % 100 == 0) { //modding by 100 should only return last 2 digits
                 break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
-        //todo: store variable within while loop before break (same as sifs)
-        ourTime = LinkLayer.getClock();
+        //ourTime = LinkLayer.getClock();
         if(LinkLayer.debug >= 1) System.out.println("Waiting Class after DIFS clock = "+ ourTime);
         return ourTime; //Return current time (so whom ever called us can update there known time)
         //todo: DIFS = SIFS + 2 windows (aka 2 backoff slots) (done)
@@ -129,12 +129,12 @@ public class Wait { //A class with all the wait's we will use for this project
                 }
             }
         while(true) {
-            if (LinkLayer.getClock() % 100 == 50 || LinkLayer.getClock() % 100 == 0) { //modding by 100 should only return last 2 digits
+            ourTime = LinkLayer.getClock();
+            if (ourTime % 100 == 50 || ourTime % 100 == 0) { //modding by 100 should only return last 2 digits
                 break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
         //todo: unsure if we return clock or countDown as we need to return countDown if we get intrupted so we dont loose that value
-        ourTime = LinkLayer.getClock();
         if(LinkLayer.debug >= 1) System.out.println("Waiting Class after BackOff clock = "+ ourTime);
         return countDown; //Return how long we waited in total
 //        return LinkLayer.getClock(); //Return current time (so whom ever called us can update there known time)
