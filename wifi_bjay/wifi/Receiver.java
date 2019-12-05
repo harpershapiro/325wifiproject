@@ -83,12 +83,13 @@ public class Receiver implements Runnable {
                     {
                         thereTime = (thereTime << 8) + (data[i] & 0xff); //converting the byte array to a long value
                     }
+                    ourTime = LinkLayer.getClock();
                     if(LinkLayer.debug>=1) output.println("ourTime is "+ ourTime);
                     if(LinkLayer.debug>=1) output.println("ThereTime was "+ thereTime);
                     if (ourTime < thereTime) {
-                        ourTime = thereTime; //update ourTime because thereTime is ahead of ours and is more accurate.
+//                        ourTime = thereTime; //update ourTime because thereTime is ahead of ours and is more accurate.
+                        LinkLayer.setClockOffset(LinkLayer.getClockOffset() + (thereTime - ourTime));
                         if(LinkLayer.debug>=1) output.println("OurTime changed too "+ ourTime);
-
                     }
                 }
                 //End Beacon related things

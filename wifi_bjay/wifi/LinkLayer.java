@@ -3,6 +3,7 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import rf.RF;
 
@@ -14,38 +15,56 @@ import static java.lang.Thread.sleep;
  * details on these routines.
  * @author richards
  */
-public class LinkLayer implements Dot11Interface 
-{
+public class LinkLayer implements Dot11Interface {
 	private static final int QUEUE_CAPACITY = 10; //todo: find better capacity
-	private RF theRF;           // You'll need one of these eventually
+	private static RF theRF;           // You'll need one of these eventually
 	private short ourMAC;       // Our MAC address
 	private PrintWriter output; // The output stream we'll write to
-    //queues for transmitting
+	//queues for transmitting
 	private ArrayBlockingQueue<Transmission> dataOutgoing = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 	private ArrayBlockingQueue<Transmission> dataIncoming = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 	private AtomicInteger ackFlag; //alerts sender thread of an ack and sends its sequence number
-    public static int debug = 1; //0 is no output, 1 is full output
+	public static int debug = 1; //0 is no output, 1 is full output
+	public static AtomicLong clockOffset;
+	public static int beaconBackoff = 2500; //how often we send beacons in ms user can change using console controls
 
+	public static long getClock() {
+		return theRF.clock() + clockOffset.get();
+	}
 
+	public static void setClockOffset(long n) {
+		clockOffset.set(n);
+	}
 
-    /**
+	public static long getClockOffset() {
+		return clockOffset.get();
+	}
+
+	public static int getBeaconBackoff() {
+		return beaconBackoff;
+	}
+
+	/**
 	 * Constructor takes a MAC address and the PrintWriter to which our output will
 	 * be written.
-	 * @param ourMAC  MAC address
-	 * @param output  Output stream associated with GUI
+	 *
+	 * @param ourMAC MAC address
+	 * @param output Output stream associated with GUI
 	 */
 	public LinkLayer(short ourMAC, PrintWriter output) {
 		this.ourMAC = ourMAC;
 		this.output = output;
 		theRF = new RF(null, null);
 		//TODO: start sender and receiver threads
-        this.ackFlag = new AtomicInteger(-1);
-		Sender send = new Sender(ourMAC,dataOutgoing,theRF,ackFlag,output);
-		Receiver receive = new Receiver(ourMAC,theRF,dataIncoming,ackFlag,output,theRF.clock());
+		this.ackFlag = new AtomicInteger(-1);
+		this.clockOffset = new AtomicLong(0);
+
+		Sender send = new Sender(ourMAC, dataOutgoing, theRF, ackFlag, output);
+		Receiver receive = new Receiver(ourMAC, theRF, dataIncoming, ackFlag, output, theRF.clock());
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
 		output.println("Starting beacon test...");
-		beaconTest();
+//		beaconTest();
 		output.println("LinkLayer: Constructor ran.");
 	}
 
@@ -54,10 +73,10 @@ public class LinkLayer implements Dot11Interface
 	 * of bytes to send.  See docs for full description.
 	 */
 	public int send(short dest, byte[] data, int len) {
-		output.println("LinkLayer: Sending "+len+" bytes to "+dest);
-		byte[] splitArr = Arrays.copyOfRange(data,0,len);
+		output.println("LinkLayer: Sending " + len + " bytes to " + dest);
+		byte[] splitArr = Arrays.copyOfRange(data, 0, len);
 		//theRF.transmit(data); //inside sender class now
-		dataOutgoing.add(new Transmission(ourMAC,dest,splitArr));
+		dataOutgoing.add(new Transmission(ourMAC, dest, splitArr));
 		return len; //return the len of the amount of data
 	}
 
@@ -66,7 +85,7 @@ public class LinkLayer implements Dot11Interface
 	 * the Transmission object.  See docs for full description.
 	 */
 	public int recv(Transmission t) {
-		if(debug==1) output.println("LinkLayer: Waiting to receive.");
+		if (debug == 1) output.println("LinkLayer: Waiting to receive.");
 
 
 		try { //try to take Transmission and catch error if bad things occur
@@ -85,12 +104,12 @@ public class LinkLayer implements Dot11Interface
 			}
 			//End ACK related things
 		} catch (InterruptedException e) {
-			if(debug == 1) output.println("Recv call interrupted.");
+			if (debug == 1) output.println("Recv call interrupted.");
 		}
 		output.println(t.getBuf().length);
 		//this buffer contains headers+data. extract data, addresses, crc.
 		return t.getBuf().length; //Does it need to return the length of data or hdr + data? ask brad
-		}
+	}
 
 	/**
 	 * Returns a current status code.  See docs for full description.
@@ -104,37 +123,37 @@ public class LinkLayer implements Dot11Interface
 	 * Passes command info to your link layer.  See docs for full description.
 	 */
 	public int command(int cmd, int val) {
-		output.println("LinkLayer: Sending command "+cmd+" with value "+val);
-		if(cmd==0){
-		    output.println("Command 1: value = [-1 -> debug output] [0 -> no debug output]");
-        }
-		if(cmd==1){
-		    if(val==-1) {
-		        output.println("Full debug output...........activated");
-		        debug=1;
-            }
-		    if(val==0) {
-                output.println("Debug output...........vanquished");
-                debug=0;
-            }
-        }
+		output.println("LinkLayer: Sending command " + cmd + " with value " + val);
+		if (cmd == 0) {
+			output.println("Command 1: value = [-1 -> debug output] [0 -> no debug output]");
+		}
+		if (cmd == 1) {
+			if (val == -1) {
+				output.println("Full debug output...........activated");
+				debug = 1;
+			}
+			if (val == 0) {
+				output.println("Debug output...........vanquished");
+				debug = 0;
+			}
+		}
 		return 0;
 	}
-
-	//sends beacon frames and determines avg time
-	private void beaconTest(){
-		//beacon frames bypass the queue so just directly send one
-		long startTime = theRF.clock();
-		int numTransmissions = 10;
-		for(int i=0;i<numTransmissions;i++) {
-			//make new packet with beacon frame
-			Packet beacon = new Packet(2,0,0,-1,ourMAC,new byte[0],0);
-			theRF.transmit(beacon.getFrame());
-			//transmit
-		}
-		long endTime = theRF.clock();
-		long avgTime = (endTime-startTime)/numTransmissions;
-		output.println("AVG beacon transmission time: " + avgTime + "ms");
-
-	}
 }
+	//sends beacon frames and determines avg time
+//	private void beaconTest(){
+//		//beacon frames bypass the queue so just directly send one
+//		long startTime = theRF.clock();
+//		int numTransmissions = 10;
+//		for(int i=0;i<numTransmissions;i++) {
+//			//make new packet with beacon frame
+//			Packet beacon = new Packet(2,0,0,-1,ourMAC,new byte[0],0);
+//			theRF.transmit(beacon.getFrame());
+//			//transmit
+//		}
+//		long endTime = theRF.clock();
+//		long avgTime = (endTime-startTime)/numTransmissions;
+//		output.println("AVG beacon transmission time: " + avgTime + "ms");
+//
+//	}
+//}

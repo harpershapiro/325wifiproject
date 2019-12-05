@@ -70,11 +70,11 @@ public class Sender<Final> implements Runnable {
             switch (state) {
                 case WAITING_4_DATA:
                    //BRAND NEW TRANSMISSION
-                    startT = theRF.clock(); //get the clock as we start a new loop
+                    startT = LinkLayer.getClock(); //get the clock as we start a new loop
                     //If sendBeacon is true then we need to send out a beacon before we can accept next data
                     if(sendBeacon) {
                         if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
-                        ourTime = theRF.clock();
+                        ourTime = LinkLayer.getClock();
                         byte[] ourTime = new byte[8];
                         for (int i = 7; i >= 0; i--) {
                             ourTime[i] = (byte)(this.ourTime & 0xFF);
@@ -192,8 +192,8 @@ public class Sender<Final> implements Runnable {
                         resetTransmission();
                         state = WAITING_4_DATA;
                         //Calc if send Beacon or not
-                        endT = theRF.clock(); //set the endT to clock and compare to startT
-                        if(startT+2500 < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
+                        if(startT+ LinkLayer.getBeaconBackoff() < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
                         //End if calc beacon
                         //todo: BAD dont do startT+2500 (2.5 seconds) find a better way to determin how often we send beacons
@@ -229,8 +229,8 @@ public class Sender<Final> implements Runnable {
                         destToSequence.replace(dest,seqNum+1); //increment sequence number
                         state = WAITING_4_DATA;
                         //Calc if send Beacon or not
-                        endT = theRF.clock(); //set the endT to clock and compare to startT
-                        if(startT+2500 < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
+                        if(startT+ LinkLayer.getBeaconBackoff() < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
                         //End if calc beacon
                         break;
@@ -257,8 +257,8 @@ public class Sender<Final> implements Runnable {
                         }
                         state = WAITING_4_DATA;
                         //Calc if send Beacon or not
-                        endT = theRF.clock(); //set the endT to clock and compare to startT
-                        if(startT+2500 < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
+                        if(startT+ LinkLayer.getBeaconBackoff() < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
                         //End if calc beacon
                         break;
