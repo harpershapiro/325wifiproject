@@ -16,7 +16,7 @@ import static java.lang.Thread.sleep;
  * @author richards
  */
 public class LinkLayer implements Dot11Interface {
-	private static final int QUEUE_CAPACITY = 10; //todo: find better capacity
+	public static final int QUEUE_CAPACITY = 4;
 	private static RF theRF;           // You'll need one of these eventually
 	private short ourMAC;       // Our MAC address
 	private PrintWriter output; // The output stream we'll write to
@@ -28,21 +28,7 @@ public class LinkLayer implements Dot11Interface {
 	public static AtomicLong clockOffset;
 	public static int beaconBackoff = 2500; //how often we send beacons in ms user can change using console controls
 
-	public static long getClock() {
-		return theRF.clock() + clockOffset.get();
-	}
 
-	public static void setClockOffset(long n) {
-		clockOffset.set(n);
-	}
-
-	public static long getClockOffset() {
-		return clockOffset.get();
-	}
-
-	public static int getBeaconBackoff() {
-		return beaconBackoff;
-	}
 
 	/**
 	 * Constructor takes a MAC address and the PrintWriter to which our output will
@@ -58,8 +44,11 @@ public class LinkLayer implements Dot11Interface {
 		//TODO: start sender and receiver threads
 		this.ackFlag = new AtomicInteger(-1);
 		this.clockOffset = new AtomicLong(0);
-		recvBeacon();
+
+		//EXPERIMENTS
+		//recvBeacon();
 		//sendingBeacon();
+
 		Sender send = new Sender(ourMAC, dataOutgoing, theRF, ackFlag, output);
 		Receiver receive = new Receiver(ourMAC, theRF, dataIncoming, ackFlag, output, theRF.clock());
 		(new Thread(send)).start();
@@ -74,10 +63,14 @@ public class LinkLayer implements Dot11Interface {
 	 * of bytes to send.  See docs for full description.
 	 */
 	public int send(short dest, byte[] data, int len) {
-		output.println("LinkLayer: Sending " + len + " bytes to " + dest);
 		byte[] splitArr = Arrays.copyOfRange(data, 0, len);
 		//theRF.transmit(data); //inside sender class now
-		dataOutgoing.add(new Transmission(ourMAC, dest, splitArr));
+		if(dataOutgoing.size()<QUEUE_CAPACITY){
+			dataOutgoing.add(new Transmission(ourMAC, dest, splitArr));
+		} else {
+			len=0;
+		}
+		output.println("LinkLayer: Sending " + len + " bytes to " + dest);
 		return len; //return the len of the amount of data
 	}
 
@@ -211,5 +204,21 @@ public class LinkLayer implements Dot11Interface {
 		long avgTime = (totalTime)/numTransmissions;
 		System.out.println("AVG RECV beacon transmission time: " + avgTime + "ms");
 
+	}
+
+	public static long getClock() {
+		return theRF.clock() + clockOffset.get();
+	}
+
+	public static void setClockOffset(long n) {
+		clockOffset.set(n);
+	}
+
+	public static long getClockOffset() {
+		return clockOffset.get();
+	}
+
+	public static int getBeaconBackoff() {
+		return beaconBackoff;
 	}
 }

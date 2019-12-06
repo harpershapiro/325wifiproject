@@ -55,6 +55,12 @@ public class Receiver implements Runnable {
             }
             rec_frame = theRF.receive(); //will wait until a data comes in
             int frameType = Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE);
+
+            //If we ran out of buffer for data, ignore
+            if(frameType==0 && dataIncoming.size()>=LinkLayer.QUEUE_CAPACITY){
+                continue;
+            }
+
             //If it's an ACK, need to let the sender know
             if(frameType ==1) {
                 int seqNum = Packet.extractcontrl(rec_frame,Packet.SEQ_NUM);
@@ -101,7 +107,7 @@ public class Receiver implements Runnable {
                 int seqNum = Packet.extractcontrl(rec_frame, Packet.SEQ_NUM);
                 int expectedSeqNum = srcToSequence.get(src);//ACK packet will hold the seqNum we received
                 if(expectedSeqNum<seqNum && dest!=-1) output.println("WARNING: Packet may have been lost.");
-                else if(expectedSeqNum>seqNum){
+                else if(expectedSeqNum>seqNum && dest!=-1){
                     if(LinkLayer.debug==1) output.println("Duplicate data received");
                     duplicateData = true;
                 }
@@ -116,7 +122,6 @@ public class Receiver implements Runnable {
                     if(LinkLayer.debug==1)output.println("Sending an ACK to " + src + " for sequence #"+seqNum);
                     //WAIT SIFS
                     try {
-                        //sleep(RF.aSIFSTime); //todo: create waiting object and call sifs
                         waiting.SIFS();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -124,8 +129,8 @@ public class Receiver implements Runnable {
                     theRF.transmit(ack.getFrame());
                 }
 
-                //DELIVER DATA
-                if(!duplicateData) dataIncoming.add(rec_trans);
+                //DELIVER DATA if it's good data
+                if(!duplicateData && frameType==0) dataIncoming.add(rec_trans);
             }
         }
     }
