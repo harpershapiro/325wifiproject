@@ -54,9 +54,9 @@ public class Receiver implements Runnable {
                 }
             }
             rec_frame = theRF.receive(); //will wait until a data comes in
-
+            int frameType = Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE);
             //If it's an ACK, need to let the sender know
-            if(Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE) ==1) {
+            if(frameType ==1) {
                 int seqNum = Packet.extractcontrl(rec_frame,Packet.SEQ_NUM);
                 if(LinkLayer.debug==1) output.println("Receiver got a possible Ack, Sequence number was "+ seqNum);
                 int dest = Packet.extractdest(rec_frame);
@@ -76,7 +76,7 @@ public class Receiver implements Runnable {
             if (dest == (short)mac || dest == -1) {
 
                 //If it's an Beacon frame then do beacon related things
-                if (Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE) == 2 ) {
+                if (frameType == 2 ) {
                     //todo: Grab data to get "thereTime" value to compare to our own
                     long thereTime = 0;
                     for (int i = 0; i < data.length; i++) //in theory this loop should only happen 8 times (long = 8 bytes)
