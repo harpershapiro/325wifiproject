@@ -58,13 +58,14 @@ public class LinkLayer implements Dot11Interface {
 		//TODO: start sender and receiver threads
 		this.ackFlag = new AtomicInteger(-1);
 		this.clockOffset = new AtomicLong(0);
-
+		recvBeacon();
+		sendingBeacon();
 		Sender send = new Sender(ourMAC, dataOutgoing, theRF, ackFlag, output);
 		Receiver receive = new Receiver(ourMAC, theRF, dataIncoming, ackFlag, output, theRF.clock());
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
 		output.println("Starting beacon test...");
-//		beaconTest();
+
 		output.println("LinkLayer: Constructor ran.");
 	}
 
@@ -139,21 +140,66 @@ public class LinkLayer implements Dot11Interface {
 		}
 		return 0;
 	}
-}
+
 	//sends beacon frames and determines avg time
-//	private void beaconTest(){
-//		//beacon frames bypass the queue so just directly send one
-//		long startTime = theRF.clock();
-//		int numTransmissions = 10;
-//		for(int i=0;i<numTransmissions;i++) {
-//			//make new packet with beacon frame
-//			Packet beacon = new Packet(2,0,0,-1,ourMAC,new byte[0],0);
-//			theRF.transmit(beacon.getFrame());
-//			//transmit
-//		}
-//		long endTime = theRF.clock();
-//		long avgTime = (endTime-startTime)/numTransmissions;
-//		output.println("AVG beacon transmission time: " + avgTime + "ms");
-//
-//	}
-//}
+	private void sendingBeacon(){
+		//beacon frames bypass the queue so just directly send one
+		long startTime = theRF.clock();
+		int numTransmissions = 10;
+		for(int i=0;i<numTransmissions;i++) {
+			//make new packet with beacon frame
+			Packet beacon = new Packet(2,0,0,-1,ourMAC,new byte[0],0);
+			theRF.transmit(beacon.getFrame());
+			//transmit
+		}
+		long endTime = theRF.clock();
+		long avgTime = (endTime-startTime)/numTransmissions;
+		System.out.println("AVG SENDER beacon transmission time: " + avgTime + "ms");
+
+	}
+
+	private void recvBeacon(){
+		//beacon frames bypass the queue so just directly send one
+//		data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
+//		short dest = (short)Packet.extractdest(rec_frame);
+//		output.println("Receiver got a data frame sent for " + dest);
+//		short src = (short)Packet.extractsrc(rec_frame);
+		byte[] data;
+		long ourTime = LinkLayer.getClock();
+		byte[] ourTimes = new byte[8];
+		for (int i = 7; i >= 0; i--) {
+			ourTimes[i] = (byte)(ourTime & 0xFF);
+			ourTime >>= 8;
+		}
+		Packet beacon = new Packet(2,0,0,-1,ourMAC,ourTimes,8);
+		byte[] rec_frame = beacon.getFrame();
+
+		int numTransmissions = 10;
+		long startTime = theRF.clock();
+
+		for(int i=0;i<numTransmissions;i++) {
+			int frameType = Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE);
+			if(frameType ==1) {}
+			//make new packet with beacon frame
+			data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
+			short dest = (short)Packet.extractdest(rec_frame);
+			short src = (short)Packet.extractsrc(rec_frame);
+			if(dest==(short)ourMAC | dest==-1) {
+				if (frameType == 2 ) {
+					//todo: Grab data to get "thereTime" value to compare to our own
+					long thereTime = 0;
+					for (int j = 0; j < data.length; j++) //in theory this loop should only happen 8 times (long = 8 bytes)
+					{
+						thereTime = (thereTime << 8) + (data[j] & 0xff); //converting the byte array to a long value
+					}
+					//long ourTime = LinkLayer.getClock();
+				}
+			}
+		}
+//		theRF.receive();
+		long endTime = theRF.clock();
+		long avgTime = (endTime-startTime)/numTransmissions;
+		System.out.println("AVG RECV beacon transmission time: " + avgTime + "ms");
+
+	}
+}

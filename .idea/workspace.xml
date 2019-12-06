@@ -9,8 +9,6 @@
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
