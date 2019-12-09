@@ -60,6 +60,18 @@ public class Receiver implements Runnable {
             if(frameType==0 && dataIncoming.size()>=LinkLayer.QUEUE_CAPACITY){
                 continue;
             }
+            //Start CRC checking of recv packet
+            int calcCRC = Packet.extractCRC(rec_frame);
+            byte[] crcBytes = Arrays.copyOfRange(rec_frame,rec_frame.length-4,rec_frame.length);
+            int getCRC = ((crcBytes[0] & 0xFF) << 24) | ((crcBytes[1] & 0xFF) << 16) | ((crcBytes[2] & 0xFF) << 8) | (crcBytes[3] & 0xFF);
+            if (calcCRC != getCRC) {
+                //todo: The CRC's don't match! tell sender
+                if(LinkLayer.debug>=1) output.println("CRC's don't match getCRC :"+ getCRC + "\nnew calcCRC :"+calcCRC);
+            }
+            else {
+                if(LinkLayer.debug>=1) output.println("CRC's MATCH!!! getCRC :"+ getCRC);
+            }
+            //End CRC check
 
             //If it's an ACK, need to let the sender know
             if(frameType ==1) {

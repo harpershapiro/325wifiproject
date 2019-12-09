@@ -26,9 +26,8 @@ public class Packet {
         this.src = src;
         this.data = data;
         this.len = len;
-
         this.checkSum = new CRC32();
-        checkSum.update(data,0, len); //todo:UPDATE CHECKSUM WITH HEADERS AND DATA
+        checkSum.update(getHeaderAndData()); //todo:UPDATE CHECKSUM WITH HEADERS AND DATA (done? needs testing)
 
     }
 
@@ -168,7 +167,32 @@ public class Packet {
 
     private long getCheckSum(){
         // all 1's in binary to bypass checksum implementation for testing purposes
-        return -1;//checkSum.getValue();
+        return checkSum.getValue();
+    }
+
+    public static int extractCRC(byte[] b) {
+        int crc = 0;
+        crc = ((b[b.length-3] & 0xff) << 24);   //is the int value of crc from packet
+        crc = ((b[b.length-2] & 0xff) << 16);   //is the int value of crc from packet
+        crc = ((b[b.length-1] & 0xff) << 8);   //is the int value of crc from packet
+
+        crc = ((b[b.length] & 0xff) | crc);
+        return crc;
+    }
+
+    public byte[] getHeaderAndData(){ //get the header so we can calc the CRC in the constructor
+        //create new frame array of proper size
+        int frameLen = NON_DATA_BYTES+len;
+        byte[] frame = new byte[frameLen-4]; //-4 because we dont we just want to calc header + data not crc
+
+        //fill in the fields
+        frame = fillControl(frame);
+        frame = fillAddresses(frame);
+        frame = fillData(frame);
+        frame = fillData(frame);
+//        frame = fillCheckSum(frame);
+
+        return frame;
     }
 
     /**
