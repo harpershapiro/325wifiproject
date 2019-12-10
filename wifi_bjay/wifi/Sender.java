@@ -72,7 +72,7 @@ public class Sender<Final> implements Runnable {
                    //BRAND NEW TRANSMISSION
                     startT = LinkLayer.getClock(); //get the clock as we start a new loop
                     //If sendBeacon is true then we need to send out a beacon before we can accept next data
-                    if(sendBeacon && LinkLayer.beaconBackoff != -1) {
+                    if(sendBeacon) {
                         if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
                         ourTime = LinkLayer.getClock();
                         byte[] ourTime = new byte[8];
@@ -91,7 +91,7 @@ public class Sender<Final> implements Runnable {
                                 data = dataOutgoing.peek();
                                 //Check for beacon
                                 endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
-                                if (startT + LinkLayer.getBeaconBackoff() < endT) {
+                                if (startT + LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled) {
                                     sendBeacon = true;
                                     break; //ignore any data we saw and go to Beacon case
                                 } else sendBeacon = false;
@@ -209,12 +209,14 @@ public class Sender<Final> implements Runnable {
                         if(LinkLayer.debug==1) output.println("Broadcast was sent.");
                         resetTransmission();
                         state = WAITING_4_DATA;
+
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
-                        if(startT+ LinkLayer.getBeaconBackoff() < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        if(startT+ LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled ) {
+                            sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        }
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
                         //End if calc beacon
-                        //todo: BAD dont do startT+2500 (2.5 seconds) find a better way to determin how often we send beacons
                         break;
                     }
                     boolean ackReceived = false;
@@ -248,7 +250,9 @@ public class Sender<Final> implements Runnable {
                         state = WAITING_4_DATA;
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
-                        if(startT+ LinkLayer.getBeaconBackoff() < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        if(startT+ LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled) {
+                            sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        }
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
                         //End if calc beacon
                         break;
@@ -276,7 +280,9 @@ public class Sender<Final> implements Runnable {
                         state = WAITING_4_DATA;
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
-                        if(startT+ LinkLayer.getBeaconBackoff() < endT) sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        if(startT+ LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled) {
+                            sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                        }
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
                         //End if calc beacon
                         break;
