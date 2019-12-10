@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.CRC32;
 
 import rf.RF;
 
@@ -46,7 +47,7 @@ public class LinkLayer implements Dot11Interface {
 		this.clockOffset = new AtomicLong(0);
 
 		//EXPERIMENTS
-		//recvBeacon();
+		recvBeacon();
 		//sendingBeacon();
 
 		Sender send = new Sender(ourMAC, dataOutgoing, theRF, ackFlag, output);
@@ -152,6 +153,8 @@ public class LinkLayer implements Dot11Interface {
 	}
 
 	private void recvBeacon(){
+		CRC32 checksum = new CRC32();
+
 		//beacon frames bypass the queue so just directly send one
 //		data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
 //		short dest = (short)Packet.extractdest(rec_frame);
@@ -167,19 +170,31 @@ public class LinkLayer implements Dot11Interface {
 
 		int numTransmissions = 10;
 		Packet beacon;
+		beacon = new Packet(2,0,0,-1,ourMAC,ourTimes,8);
+		byte[] rec_frame = beacon.getFrame();
 
-		int totalTime = 0;
+		long startTime = theRF.clock();
 		for(int i=0;i<numTransmissions;i++) {
 			//transmit a packet without timing
-			beacon = new Packet(2,0,0,-1,ourMAC,ourTimes,8);
-			theRF.transmit(beacon.getFrame());
+
+//			theRF.transmit(beacon.getFrame());
 
 			//time the receiving portion
-			long startTime = theRF.clock();
-			byte[] rec_frame = theRF.receive();
+
 			System.out.println("Received something i="+i);
 			int frameType = Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE);
 			if(frameType ==1) {}
+			long crc = Packet.extractCRC(rec_frame);
+
+			byte[] crcBytes = Arrays.copyOfRange(rec_frame,0,rec_frame.length-4);
+
+			checksum.update(crcBytes);
+			int getCRC = (int) checksum.getValue();
+			if (crc == getCRC) {
+				;
+			}
+			else { ; }
+
 			//make new packet with beacon frame
 			data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
 			short dest = (short)Packet.extractdest(rec_frame);
@@ -195,13 +210,14 @@ public class LinkLayer implements Dot11Interface {
 					//long ourTime = LinkLayer.getClock();
 				}
 			}
-			long endTime = theRF.clock();
-			totalTime+=endTime-startTime;
+
+//			totalTime+=endTime-startTime;
 		}
+		long endTime = theRF.clock();
 //		theRF.receive();
 
 		//System.out.println("Endtime was " + endTime);
-		long avgTime = (totalTime)/numTransmissions;
+		long avgTime = (endTime-startTime)/numTransmissions;
 		System.out.println("AVG RECV beacon transmission time: " + avgTime + "ms");
 
 	}

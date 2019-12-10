@@ -72,7 +72,7 @@ public class Sender<Final> implements Runnable {
                    //BRAND NEW TRANSMISSION
                     startT = LinkLayer.getClock(); //get the clock as we start a new loop
                     //If sendBeacon is true then we need to send out a beacon before we can accept next data
-                    if(sendBeacon) {
+                    if(sendBeacon && LinkLayer.beaconBackoff != -1) {
                         if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
                         ourTime = LinkLayer.getClock();
                         byte[] ourTime = new byte[8];

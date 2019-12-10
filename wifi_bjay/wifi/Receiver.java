@@ -33,6 +33,7 @@ public class Receiver implements Runnable {
         this.ackFlag = ackFlag;
         this.srcToSequence = new HashMap<Short,Integer>();
         this.ourTime = ourTime;
+        this.checksum = new CRC32();
     }
 
     @Override
@@ -61,9 +62,12 @@ public class Receiver implements Runnable {
                 continue;
             }
             //Start CRC checking of recv packet
-            int calcCRC = Packet.extractCRC(rec_frame);
-            byte[] crcBytes = Arrays.copyOfRange(rec_frame,rec_frame.length-4,rec_frame.length);
-            int getCRC = ((crcBytes[0] & 0xFF) << 24) | ((crcBytes[1] & 0xFF) << 16) | ((crcBytes[2] & 0xFF) << 8) | (crcBytes[3] & 0xFF);
+            long calcCRC = Packet.extractCRC(rec_frame);
+            byte[] crcBytes = Arrays.copyOfRange(rec_frame,0,rec_frame.length-Packet.CRC_BYTES);
+            checksum.update(crcBytes);
+            long getCRC = checksum.getValue();
+            System.out.println("GET getCRC : "+getCRC);
+            System.out.println("GET calcCRC : "+calcCRC);
             if (calcCRC != getCRC) {
                 //todo: The CRC's don't match! tell sender
                 if(LinkLayer.debug>=1) output.println("CRC's don't match getCRC :"+ getCRC + "\nnew calcCRC :"+calcCRC);
@@ -103,12 +107,12 @@ public class Receiver implements Runnable {
                         thereTime = (thereTime << 8) + (data[i] & 0xff); //converting the byte array to a long value
                     }
                     ourTime = LinkLayer.getClock();
-                    if(LinkLayer.debug>=1) output.println("ourTime is "+ ourTime);
-                    if(LinkLayer.debug>=1) output.println("ThereTime was "+ thereTime);
+//                    if(LinkLayer.debug>=1) output.println("ourTime is "+ ourTime);
+//                    if(LinkLayer.debug>=1) output.println("ThereTime was "+ thereTime);
                     if (ourTime < thereTime) {
 //                        ourTime = thereTime; //update ourTime because thereTime is ahead of ours and is more accurate.
                         LinkLayer.setClockOffset(LinkLayer.getClockOffset() + (thereTime - ourTime));
-                        if(LinkLayer.debug>=1) output.println("OurTime changed too "+ ourTime);
+//                        if(LinkLayer.debug>=1) output.println("OurTime changed too "+ ourTime);
                     }
                 }
                 //End Beacon related things
