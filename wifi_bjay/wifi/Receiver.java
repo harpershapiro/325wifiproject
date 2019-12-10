@@ -95,6 +95,7 @@ public class Receiver implements Runnable {
 
                 //If it's an Beacon frame then do beacon related things
                 if (frameType == 2 ) {
+                    if(LinkLayer.debug>=1) output.println("\tGOT BEACON");
                     //todo: Grab data to get "thereTime" value to compare to our own
                     long thereTime = 0;
                     for (int i = 0; i < data.length; i++) //in theory this loop should only happen 8 times (long = 8 bytes)

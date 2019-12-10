@@ -26,7 +26,7 @@ public class LinkLayer implements Dot11Interface {
 	private AtomicInteger ackFlag; //alerts sender thread of an ack and sends its sequence number
 	public static int debug = 1; //0 is no output, 1 is full output
 	public static AtomicLong clockOffset;
-	public static int beaconBackoff = 2500; //how often we send beacons in ms user can change using console controls
+	public static int beaconBackoff = 10000; //how often we send beacons in ms user can change using console controls
 
 
 
