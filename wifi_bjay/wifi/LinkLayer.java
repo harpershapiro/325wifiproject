@@ -48,7 +48,7 @@ public class LinkLayer implements Dot11Interface {
 		this.clockOffset = new AtomicLong(0);
 
 		//EXPERIMENTS
-		recvBeacon();
+//		recvBeacon();
 //		sendingBeacon();
 
 		Sender send = new Sender(ourMAC, dataOutgoing, theRF, ackFlag, output);

@@ -37,10 +37,10 @@ public class Wait { //A class with all the wait's we will use for this project
 
     public void setRanBackoff() {
         if(LinkLayer.backoffFixed) { //if true this backoff is fixed (always use max)
-            countDown = window;
+            countDown = window; //this is setting the backoff window to its max value always
         }
         else {
-            this.countDown = (int) (Math.random() * (window+1));
+            this.countDown = (int) (Math.random() * (window+1)); //Choose a ran number between 0 and window size
         }
     }
 

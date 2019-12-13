@@ -76,12 +76,12 @@ public class Sender<Final> implements Runnable {
                     if(sendBeacon) {
                         if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
                         ourTime = LinkLayer.getClock() + FUDGEFACTOR;
-                        byte[] ourTime = new byte[8];
+                        byte[] data = new byte[8];
                         for (int i = 7; i >= 0; i--) {
-                            ourTime[i] = (byte)(this.ourTime & 0xFF);
-                            this.ourTime >>= 8;
+                            data[i] = (byte)(this.ourTime & 0xFF);
+                            ourTime >>= 8;
                         }
-                        this.datapck = new Packet(2, 0, 0, -1, mac , ourTime, ourTime.length);
+                        this.datapck = new Packet(2, 0, 0, -1, mac , data, data.length);
                     }
                     //End setting up beacon packet proceed with sender's burden logic
                    else if(datapck==null) {
