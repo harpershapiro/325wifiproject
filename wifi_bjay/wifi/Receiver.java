@@ -114,6 +114,7 @@ public class Receiver implements Runnable {
                     if(LinkLayer.debug>=1) output.println("Difference : "+ (thereTime - ourTime));
                     if (ourTime < thereTime) {
 //                        ourTime = thereTime; //update ourTime because thereTime is ahead of ours and is more accurate.
+                        if(LinkLayer.debug>=1) output.println("Offset before : "+ LinkLayer.getClockOffset());
                         LinkLayer.setClockOffset(LinkLayer.getClockOffset() + (thereTime - ourTime));
                         if(LinkLayer.debug>=1) output.println("Offset : "+ LinkLayer.getClockOffset());
                         if(LinkLayer.debug>=1) output.println("OurTime changed too "+ thereTime);
