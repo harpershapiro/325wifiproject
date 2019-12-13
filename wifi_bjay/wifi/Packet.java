@@ -6,7 +6,6 @@ public class Packet {
     public static final int HDRBYTES =  NUM_CONTROL_BYTES+DEST_ADDR_BYTES+SRC_ADDR_BYTES;
     public static final int NON_DATA_BYTES = HDRBYTES+CRC_BYTES;
     public static final int FRAME_TYPE=0, RETRY=1, SEQ_NUM=2;
-    public static final int MAX_SHORT_VALUE = 65535;
 
 
     private int frameType;
@@ -27,7 +26,7 @@ public class Packet {
         this.data = data;
         this.len = len;
         this.checkSum = new CRC32();
-        checkSum.update(getHeaderAndData()); //todo:UPDATE CHECKSUM WITH HEADERS AND DATA (done? needs testing)
+        checkSum.update(getHeaderAndData());
 
     }
 

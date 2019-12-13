@@ -17,7 +17,13 @@ import static java.lang.Thread.sleep;
  * @author richards
  */
 public class LinkLayer implements Dot11Interface {
+	//CONSTANTS
 	public static final int QUEUE_CAPACITY = 4;
+	public static final int SUCCESS=1,UNSPECIFIED_ERROR=2,RF_INIT_FAILED=3,
+			TX_DELIVERED=4,TX_FAILED=5,BAD_ADDRESS=7,ILLEGAL_ARGUMENT=9,INSUFFICIENT_BUFFER_SPACE=10;
+	public static final int MAX_SHORT_VALUE = 65535;
+
+	//GLOBALS
 	private static RF theRF;           // You'll need one of these eventually
 	private short ourMAC;       // Our MAC address
 	private PrintWriter output; // The output stream we'll write to
@@ -25,12 +31,17 @@ public class LinkLayer implements Dot11Interface {
 	private ArrayBlockingQueue<Transmission> dataOutgoing = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 	private ArrayBlockingQueue<Transmission> dataIncoming = new ArrayBlockingQueue<Transmission>(QUEUE_CAPACITY);
 	private AtomicInteger ackFlag; //alerts sender thread of an ack and sends its sequence number
-	public static int debug = 1; //0 is no output, 1 is full output
-	public static AtomicLong clockOffset;
-	public static int beaconBackoff = 5000;//how often we send beacons in ms user can change using console controls
-	public static boolean beaconsEnabled = true;
 
-	public static boolean backoffFixed = false;
+
+	//upkeep and settings
+	public static int debug; //0 is no output, 1 is full output
+	public static AtomicLong clockOffset;
+	public static int beaconBackoff;//how often we send beacons in ms user can change using console controls
+	public static boolean beaconsEnabled;
+	public static boolean backoffFixed;
+	public static int status;
+
+
 
 	/**
 	 * Constructor takes a MAC address and the PrintWriter to which our output will
@@ -40,12 +51,24 @@ public class LinkLayer implements Dot11Interface {
 	 * @param output Output stream associated with GUI
 	 */
 	public LinkLayer(short ourMAC, PrintWriter output) {
+		if(ourMAC==-1){
+			output.println("MAC address set to -1, a problematic value. Please don't do that.");
+		}
 		this.ourMAC = ourMAC;
+		//settings and streams
 		this.output = output;
+		this.debug=1;
+		this.beaconBackoff = 5000;
+		this.beaconsEnabled=true;
+		this.backoffFixed=false;
+		//try to set up RF
 		theRF = new RF(null, null);
-		//TODO: start sender and receiver threads
+		if(theRF==null) status = RF_INIT_FAILED;
+
+		//set the vars for inter-thread communication
 		this.ackFlag = new AtomicInteger(-1);
 		this.clockOffset = new AtomicLong(0);
+
 
 		//EXPERIMENTS
 //		recvBeacon();
@@ -55,9 +78,8 @@ public class LinkLayer implements Dot11Interface {
 		Receiver receive = new Receiver(ourMAC, theRF, dataIncoming, ackFlag, output, theRF.clock());
 		(new Thread(send)).start();
 		(new Thread(receive)).start();
-		output.println("Starting beacon test...");
-
 		output.println("LinkLayer: Constructor ran.");
+		this.status = SUCCESS;
 	}
 
 	/**
@@ -65,11 +87,23 @@ public class LinkLayer implements Dot11Interface {
 	 * of bytes to send.  See docs for full description.
 	 */
 	public int send(short dest, byte[] data, int len) {
+		//status upkeep
+		if(len<0){
+			status=ILLEGAL_ARGUMENT;
+			return 0;
+		}
+		if(data==null){
+			status=BAD_ADDRESS;
+			return 0;
+		}
+
+		//attempt a send
 		byte[] splitArr = Arrays.copyOfRange(data, 0, len);
 		//theRF.transmit(data); //inside sender class now
 		if(dataOutgoing.size()<QUEUE_CAPACITY){
 			dataOutgoing.add(new Transmission(ourMAC, dest, splitArr));
 		} else {
+			status=INSUFFICIENT_BUFFER_SPACE;
 			len=0;
 		}
 		output.println("LinkLayer: Sending " + len + " bytes to " + dest);
@@ -82,7 +116,10 @@ public class LinkLayer implements Dot11Interface {
 	 */
 	public int recv(Transmission t) {
 		if (debug == 1) output.println("LinkLayer: Waiting to receive.");
-
+		if(t==null){
+			status=BAD_ADDRESS;
+			return 0;
+		}
 
 		try { //try to take Transmission and catch error if bad things occur
 			Transmission receipt = dataIncoming.take(); //remove the data from the Queue and store the data for later
@@ -90,17 +127,9 @@ public class LinkLayer implements Dot11Interface {
 			t.setBuf(receipt.getBuf());
 			t.setDestAddr(receipt.getDestAddr());
 			t.setSourceAddr(receipt.getSourceAddr());
-			//fill ACK packet to transmit
-			if (t.getDestAddr() != -1) { //if it's not equal to -1 then we should send ACK
-//				byte[] emptyData = new byte[0];
-				//Transmission buildAck = new Transmission(t.getDestAddr(), t.getSourceAddr(), emptyData);
-//				Packet ack_pck = new Packet(001,0,0,t.getSourceAddr(),t.getDestAddr(),emptyData,emptyData.length);
-				//todo:wait SIFS then immediately transmit Need to find how to calculate SIFS (done? in new Wait class)
-//				theRF.transmit(ack_pck.getFrame()); //should transmit the packet made above to the "sender" with ACK and empty data
-			}
-			//End ACK related things
 		} catch (InterruptedException e) {
 			if (debug == 1) output.println("Recv call interrupted.");
+			status=UNSPECIFIED_ERROR;
 		}
 		output.println(t.getBuf().length);
 		//this buffer contains headers+data. extract data, addresses, crc.
@@ -111,8 +140,7 @@ public class LinkLayer implements Dot11Interface {
 	 * Returns a current status code.  See docs for full description.
 	 */
 	public int status() {
-		output.println("LinkLayer: Faking a status() return value of 0");
-		return 0;
+		return status;
 	}
 
 	/**
@@ -126,8 +154,10 @@ public class LinkLayer implements Dot11Interface {
 							"\n[Command 3 -> [<= 0 Disable beacons] [> 0 Enabled beacons, Val is delay in seconds]");
 			output.println("Current settings :\nDebug : "+debug+
 							"\nBeacon enabled/delay :"+beaconsEnabled+"/"+beaconBackoff);
+			//print status
+			output.println("Status Code: " + status());
 		}
-		if (cmd == 1) {
+		else if (cmd == 1) {
 			if (val == -1) {
 				output.println("Full debug output...........activated");
 				debug = 1;
@@ -151,6 +181,8 @@ public class LinkLayer implements Dot11Interface {
 				beaconsEnabled = true;
 				beaconBackoff = val*1000;
 			}
+		} else {
+			output.println("Invalid command.");
 		}
 		return 0;
 	}

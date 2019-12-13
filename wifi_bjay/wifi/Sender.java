@@ -61,7 +61,7 @@ public class Sender<Final> implements Runnable {
     public void run(){
 
         // State Machine for 802.11~ sender
-        Wait waiting = new Wait(theRF,theRF.aCWmin,100);
+        Wait waiting = new Wait(theRF,theRF.aCWmin,50); //50 50ms slots for ack timeout
         //determines whether or not we are in the middle of an expontential backoff countdown
         boolean setBackoff = true;
         while(true) {
@@ -228,17 +228,21 @@ public class Sender<Final> implements Runnable {
 
                     //Wait for Receiver to show us that an Ack Has been received, make sure it is correct one
                     waiting.setAckcd(waiting.getAcktimeout());
-                    while(waiting.WaitForAck() > 0) { //todo: MOVE THIS INTO RECEIVER THREAD
+                    //long startTime = LinkLayer.getClock();
+                    while(waiting.WaitForAck() > 0) {
                         if(ackFlag.get()>=0) { //when ackFlag is set, compare sequence numbers
                             if(LinkLayer.debug ==1) output.println("Sender Checking a possible ack...");
                             int ackseqNum = ackFlag.get();
                             if(ackseqNum==this.seqNum){ //ACK was for us!!!!!!!!!
                                 ackReceived = true;
                                 if(LinkLayer.debug ==1) output.println("Ack " + seqNum + " Received");
+
                                 break;
                             }
                         }
                     }
+                    //long endTime = LinkLayer.getClock();
+                    //output.println("took "+ (endTime-startTime) + " millis to get an ack");
                     //reset for next ack
                     ackFlag.set(-1);
 
@@ -248,14 +252,15 @@ public class Sender<Final> implements Runnable {
                         resetTransmission();
                         waiting.resetWindow();
                         destToSequence.replace(dest,seqNum+1); //increment sequence number
+                        LinkLayer.status=LinkLayer.TX_DELIVERED;
                         state = WAITING_4_DATA;
+
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
                         if(startT+ LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled) {
                             sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
                         }
                         else sendBeacon = false; //if false then we do need to send a Beacon frame
-                        //End if calc beacon
                         break;
                     //no ACK received - might need to retry and double contention window
                     } else {
@@ -276,6 +281,7 @@ public class Sender<Final> implements Runnable {
                             if(LinkLayer.debug==1) output.println("Retry attempts reached. Discarding packet and resetting backoff window.");
                             resetTransmission();
                             waiting.resetWindow();
+                            LinkLayer.status=LinkLayer.TX_FAILED;
                             destToSequence.replace(dest,seqNum+1); //increment sequence number
                         }
                         state = WAITING_4_DATA;

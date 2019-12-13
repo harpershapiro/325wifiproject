@@ -15,7 +15,6 @@ import static java.lang.Thread.sleep;
 public class Receiver implements Runnable {
     private int mac;
     private long crc;       //This is the crc that we will save to compare to the packet later
-    //private byte[] rec_pck; //Place holder for when we rec packet we can store it
     private RF theRF;       //You'll need one of these eventually
     private CRC32 checksum;
     private ArrayBlockingQueue<Transmission> dataIncoming;
@@ -44,9 +43,9 @@ public class Receiver implements Runnable {
         boolean duplicateData;
 
         while(true) {
-            //check if there is some data to receive, sleep for a bit otherwise
             duplicateData = false; //we want to make sure  not to deliver duplicates
             if(LinkLayer.debug==1) output.println("RECV Waiting for packets");
+            //check if there is some data to receive, sleep for a bit otherwise
             while(!theRF.dataWaiting()){
                 try {
                     sleep(50); //todo: look at datamations and find out how long to wait (add to waiting object)
