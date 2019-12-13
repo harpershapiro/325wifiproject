@@ -36,7 +36,12 @@ public class Wait { //A class with all the wait's we will use for this project
     }
 
     public void setRanBackoff() {
-        this.countDown = (int) (Math.random() * (window+1));
+        if(LinkLayer.backoffFixed) { //if true this backoff is fixed (always use max)
+            countDown = window;
+        }
+        else {
+            this.countDown = (int) (Math.random() * (window+1));
+        }
     }
 
     public void resetWindow(){
