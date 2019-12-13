@@ -170,8 +170,8 @@ public class Packet {
         return checkSum.getValue();
     }
 
-    public static long extractCRC(byte[] b) {
-        long crc = 0;
+    public static int extractCRC(byte[] b) {
+        int crc = 0;
         crc += ((b[b.length-4] & 0xff) << 24);   //is the int value of crc from packet
         crc += ((b[b.length-3] & 0xff) << 16);   //is the int value of crc from packet
         crc += ((b[b.length-2] & 0xff) << 8);   //is the int value of crc from packet

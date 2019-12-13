@@ -27,10 +27,10 @@ public class LinkLayer implements Dot11Interface {
 	private AtomicInteger ackFlag; //alerts sender thread of an ack and sends its sequence number
 	public static int debug = 1; //0 is no output, 1 is full output
 	public static AtomicLong clockOffset;
-	public static int beaconBackoff = 10000;//how often we send beacons in ms user can change using console controls
-	public static boolean beaconsEnabled = false;
+	public static int beaconBackoff = 5000;//how often we send beacons in ms user can change using console controls
+	public static boolean beaconsEnabled = true;
 
-
+	public static boolean backoffFixed = false;
 
 	/**
 	 * Constructor takes a MAC address and the PrintWriter to which our output will
@@ -49,7 +49,7 @@ public class LinkLayer implements Dot11Interface {
 
 		//EXPERIMENTS
 		recvBeacon();
-		//sendingBeacon();
+//		sendingBeacon();
 
 		Sender send = new Sender(ourMAC, dataOutgoing, theRF, ackFlag, output);
 		Receiver receive = new Receiver(ourMAC, theRF, dataIncoming, ackFlag, output, theRF.clock());
@@ -121,7 +121,11 @@ public class LinkLayer implements Dot11Interface {
 	public int command(int cmd, int val) {
 		output.println("LinkLayer: Sending command " + cmd + " with value " + val);
 		if (cmd == 0) {
-			output.println("Command 1: value = [-1 -> debug output] [0 -> no debug output]");
+			output.println( "Command 1: value = [-1 -> debug output] [0 -> no debug output]" +
+							"\n[Command 2 -> [0 Enable fixed backoff] [1 Enable random backoff]"+
+							"\n[Command 3 -> [<= 0 Disable beacons] [> 0 Enabled beacons, Val is delay in seconds]");
+			output.println("Current settings :\nDebug : "+debug+
+							"\nBeacon enabled/delay :"+beaconsEnabled+"/"+beaconBackoff);
 		}
 		if (cmd == 1) {
 			if (val == -1) {
@@ -133,24 +137,45 @@ public class LinkLayer implements Dot11Interface {
 				debug = 0;
 			}
 		}
+		else if (cmd == 2) {
+			if (val == 0) {output.println("Setting backoff to fixed"); backoffFixed = true; }
+			else if (val == 1) {output.println("Setting backoff to random"); backoffFixed = false; }
+		}
+		else if (cmd == 3) { //how ofter we transmit beacons
+			if (val <= -1) {
+				output.println("Turning off beacon");
+				beaconsEnabled = false;
+			}
+			else {
+				output.println("Turning on beacon, second delay is now "+ val);
+				beaconsEnabled = true;
+				beaconBackoff = val*1000;
+			}
+		}
 		return 0;
 	}
 
 	//sends beacon frames and determines avg time
 	private void sendingBeacon(){
 		//beacon frames bypass the queue so just directly send one
-		long startTime = theRF.clock();
 		int numTransmissions = 10;
+		long ourTime = 0;
+		long startTime = theRF.clock();
 		for(int i=0;i<numTransmissions;i++) {
 			//make new packet with beacon frame
-			Packet beacon = new Packet(2,0,0,-1,ourMAC,new byte[0],0);
+			 ourTime = LinkLayer.getClock();
+			byte[] data = new byte[8];
+			for (int j = 7; j >= 0; j--) {
+				data[j] = (byte)(ourTime & 0xFF);
+				ourTime >>= 8;
+			}
+			Packet beacon = new Packet(2,0,0,-1,ourMAC,new byte[8],8);
 			theRF.transmit(beacon.getFrame());
 			//transmit
 		}
 		long endTime = theRF.clock();
 		long avgTime = (endTime-startTime)/numTransmissions;
 		System.out.println("AVG SENDER beacon transmission time: " + avgTime + "ms");
-
 	}
 
 	private void recvBeacon(){
@@ -182,19 +207,16 @@ public class LinkLayer implements Dot11Interface {
 
 			//time the receiving portion
 
-			System.out.println("Received something i="+i);
+//			System.out.println("Received something i="+i);
+			//Start CRC testing
+			int extractCRC = Packet.extractCRC(rec_frame);
+			byte[] crcBytes = Arrays.copyOfRange(rec_frame,0,rec_frame.length-Packet.CRC_BYTES);
+			checksum.reset();
+			checksum.update(crcBytes);
+			if (extractCRC != (int)checksum.getValue()) {}
+			//End CRC testing
 			int frameType = Packet.extractcontrl(rec_frame,Packet.FRAME_TYPE);
 			if(frameType ==1) {}
-			long crc = Packet.extractCRC(rec_frame);
-
-			byte[] crcBytes = Arrays.copyOfRange(rec_frame,0,rec_frame.length-4);
-
-			checksum.update(crcBytes);
-			int getCRC = (int) checksum.getValue();
-			if (crc == getCRC) {
-				;
-			}
-			else { ; }
 
 			//make new packet with beacon frame
 			data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4

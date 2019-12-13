@@ -30,6 +30,7 @@ public class Sender<Final> implements Runnable {
     private long ourTime;
     private long startT = 0;
     private long endT = startT; //if endT is more than 100 larger than startT set sendBeacon to true
+    final private int FUDGEFACTOR = 1802;
 
 
     public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF,AtomicInteger ackFlag, PrintWriter output){
@@ -74,7 +75,7 @@ public class Sender<Final> implements Runnable {
                     //If sendBeacon is true then we need to send out a beacon before we can accept next data
                     if(sendBeacon) {
                         if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
-                        ourTime = LinkLayer.getClock();
+                        ourTime = LinkLayer.getClock() + FUDGEFACTOR;
                         byte[] ourTime = new byte[8];
                         for (int i = 7; i >= 0; i--) {
                             ourTime[i] = (byte)(this.ourTime & 0xFF);
