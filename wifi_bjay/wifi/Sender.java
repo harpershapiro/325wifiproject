@@ -30,7 +30,7 @@ public class Sender<Final> implements Runnable {
     private long ourTime;
     private long startT;
     private long endT; //if endT is more than 100 larger than startT set sendBeacon to true
-    final private int FUDGEFACTOR = 1802; //beacon transmission estimation
+    final private int FUDGEFACTOR = 2402; //beacon transmission estimation //1802 (prev estimated time)
 
 
     public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF,AtomicInteger ackFlag, PrintWriter output){

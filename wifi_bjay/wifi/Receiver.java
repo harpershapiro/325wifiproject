@@ -39,7 +39,7 @@ public class Receiver implements Runnable {
     public void run(){
         byte[] rec_frame; //variable to store our receipt from RF layer
         byte[] data;
-        Wait waiting = new Wait(theRF,theRF.aCWmin,100); //todo: better ackTimeout
+        Wait waiting = new Wait(theRF,theRF.aCWmin,100);
         boolean duplicateData;
 
         while(true) {
@@ -48,7 +48,7 @@ public class Receiver implements Runnable {
             //check if there is some data to receive, sleep for a bit otherwise
             while(!theRF.dataWaiting()){
                 try {
-                    sleep(50); //todo: look at datamations and find out how long to wait (add to waiting object)
+                    sleep(50);
                 } catch (InterruptedException e){
                     continue; //just go back to top if this didn't work
                 }
@@ -101,7 +101,7 @@ public class Receiver implements Runnable {
                 //If it's an Beacon frame then do beacon related things
                 if (frameType == 2 ) {
                     if(LinkLayer.debug>=1) output.println("\tGOT BEACON");
-                    //todo: Grab data to get "thereTime" value to compare to our own
+                    //Grab data to get "thereTime" value to compare to our own
                     long thereTime = 0;
                     for (int i = 0; i < data.length; i++) //in theory this loop should only happen 8 times (long = 8 bytes)
                     {
@@ -111,8 +111,8 @@ public class Receiver implements Runnable {
                     if(LinkLayer.debug>=1) output.println("ourTime is      "+ ourTime);
                     if(LinkLayer.debug>=1) output.println("ThereTime was "+ thereTime);
                     if(LinkLayer.debug>=1) output.println("Difference : "+ (thereTime - ourTime));
+                    if(LinkLayer.debug>=1 && ourTime > thereTime) output.println("Offset : "+ LinkLayer.getClockOffset()); //todo: remove before final turn in
                     if (ourTime < thereTime) {
-//                        ourTime = thereTime; //update ourTime because thereTime is ahead of ours and is more accurate.
                         if(LinkLayer.debug>=1) output.println("Offset before : "+ LinkLayer.getClockOffset());
                         LinkLayer.setClockOffset(LinkLayer.getClockOffset() + (thereTime - ourTime));
                         if(LinkLayer.debug>=1) output.println("Offset : "+ LinkLayer.getClockOffset());
