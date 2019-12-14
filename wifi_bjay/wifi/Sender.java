@@ -19,18 +19,18 @@ public class Sender<Final> implements Runnable {
     private  ArrayBlockingQueue<Transmission> dataOutgoing;
     private rf.RF theRF;
     private PrintWriter output;
-    private Packet datapck = null;
+    private Packet datapck;
     private int retryAttempts;
     private int seqNum;
     private short dest;
     private HashMap<Short,Integer> destToSequence; //maps dest to sequence number
     private AtomicInteger ackFlag; //value of the sequence number of an ack received in receiver thread (shared)
 
-    private boolean sendBeacon = false; //every 100ms or so we make this true and when the current packet ends we send beacon frame before grabbing the next data.
+    private boolean sendBeacon; //every 100ms or so we make this true and when the current packet ends we send beacon frame before grabbing the next data.
     private long ourTime;
-    private long startT = 0;
-    private long endT = startT; //if endT is more than 100 larger than startT set sendBeacon to true
-    final private int FUDGEFACTOR = 1802;
+    private long startT;
+    private long endT; //if endT is more than 100 larger than startT set sendBeacon to true
+    final private int FUDGEFACTOR = 1802; //beacon transmission estimation
 
 
     public Sender(int mac, ArrayBlockingQueue<Transmission> dataOutgoing, rf.RF theRF,AtomicInteger ackFlag, PrintWriter output){
@@ -41,38 +41,40 @@ public class Sender<Final> implements Runnable {
         this.dataOutgoing = dataOutgoing;
         this.theRF = theRF;
         this.output = output;
+        this.datapck=null;
         this.retryAttempts=0;
-        //this.seqNum=0;
         this.destToSequence = new HashMap<Short,Integer>();
         this.ackFlag = ackFlag;
+        this.sendBeacon=false;
+        this.startT=0;
+        this.endT=0;
     }
 
     public void resetTransmission(){
         fullyIdle = false;
-        //set datapck to null
         datapck = null;
         retry = false;
         retryAttempts = 0;
-
-        //seqNum++;
     }
 
     @Override
     public void run(){
 
-        // State Machine for 802.11~ sender
+        //STATE MACHINE FOR 802.11~ SENDER SPEC
+
         Wait waiting = new Wait(theRF,theRF.aCWmin,50); //50 50ms slots for ack timeout
-        //determines whether or not we are in the middle of an expontential backoff countdown
-        boolean setBackoff = true;
+        boolean setBackoff = true; //determines whether or not we are in the middle of an expontential backoff countdown
+
         while(true) {
             if (setBackoff) {
                 waiting.setRanBackoff(); //each loop we set the Window backoff size to use this loop (we reloop when this changes anyway so its safe)
             }
             switch (state) {
-                case WAITING_4_DATA:
+
+                case WAITING_4_DATA://///////////////////////////////////////////////////////////////////////////////
+
                    //BRAND NEW TRANSMISSION
                     startT = LinkLayer.getClock(); //get the clock as we start a new loop
-                    //If sendBeacon is true then we need to send out a beacon before we can accept next data
                     if(sendBeacon) {
                         if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
                         ourTime = LinkLayer.getClock() + FUDGEFACTOR;
@@ -83,10 +85,11 @@ public class Sender<Final> implements Runnable {
                         }
                         this.datapck = new Packet(2, 0, 0, -1, mac , data, data.length);
                     }
-                    //End setting up beacon packet proceed with sender's burden logic
+
+                    //End setting up beacon packet proceed with sender logic
                    else if(datapck==null) {
                        Transmission data; //holds what we grabbed from queue
-                       //Carefully look for data to send and determine if Beacon must be sent
+                       //Carefully look for data to send + escape if beacon transmission needed
                         while(true) {
                             try {
                                 data = dataOutgoing.peek();
@@ -97,7 +100,7 @@ public class Sender<Final> implements Runnable {
                                     break; //ignore any data we saw and go to Beacon case
                                 } else sendBeacon = false;
 
-                                //non-Beacon case : take the data
+                                //Take data
                                 if (data != null) {
                                     data = dataOutgoing.take();
                                     break;
@@ -111,7 +114,6 @@ public class Sender<Final> implements Runnable {
                         if(sendBeacon) break; //SORRY but we need to go back to the top.
 
                        //Get some addresses and upkeep sequence number hashmap
-
                        //short src = data.getSourceAddr();
                        this.dest = data.getDestAddr();
                        if(!destToSequence.containsKey(dest)){
@@ -121,32 +123,30 @@ public class Sender<Final> implements Runnable {
 
                        //make our packet to transmit
                        this.datapck = new Packet(000, 0, seqNum, dest, mac , data.getBuf(), data.getBuf().length);
-                   }
 
-                   //RETRY TRANMISSION
-                   else {
+                   //RETRY TRANMISSION (since we still have leftover data to send)
+                   } else {
                        datapck.setRetry(1);
                    }
 
                     //assign a new state depending on medium access
-                    if (theRF.inUse()) { //if the Line is in use change to the corresponding state.
-                        //we would set to false but it already set to false
+                    if (theRF.inUse()) {
                         state = WAITING_4_MED_ACCESS;
                         break;
                     }
                     else {
-                        if (!retry) fullyIdle = true; //only fully idle if first try
+                        if (!retry) fullyIdle = true; //only fully idle if new transmission
                         state = WAITING_DIFS;
                         break;
                     }
 
-                case WAITING_4_MED_ACCESS:
+                case WAITING_4_MED_ACCESS:///////////////////////////////////////////////////////////////////////////
                     //check if RF in use, If false then line not in use wait DIFS
                     if (theRF.inUse()) {
                         try {
                             sleep(5); //sleep a little to save cpu
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            continue;
                         }
                         break;
                     }
@@ -155,7 +155,7 @@ public class Sender<Final> implements Runnable {
                         break;
                     }
 
-                case WAITING_DIFS: //
+                case WAITING_DIFS: /////////////////////////////////////////////////////////////////////////////////
                     try {
                         if(LinkLayer.debug ==1) output.println("Waiting DIFS...");
                         waiting.DIFS();
@@ -164,26 +164,24 @@ public class Sender<Final> implements Runnable {
                     }
 
                     //time elapsed & medium is not idle
-                    if (theRF.inUse()) { //true if line currently in use
+                    if (theRF.inUse()) {
                         if(LinkLayer.debug ==1) output.println("Channel was in use after DIFS.");
-                        state = WAITING_4_MED_ACCESS; //wait until line not in use
+                        state = WAITING_4_MED_ACCESS;
                         break;
                     }
 
-                    //time elapsed & medium is idle & fullyIdle false
+                    //time elapsed & medium is idle & we've already waited for medium access
                     if (!fullyIdle && !theRF.inUse()) { //good. line not in use. start backoff.
                         state = WAITING_BACKOFF;                //If fullyIdle is false then must be right branch of MAC rules
                         break;
                     }
-                    //time elapsed & medium idle & fullyIdle
-                    //IDEAL CASE
-                    if(fullyIdle && !theRF.inUse()) { //left branch of MAC rules (best case)
+                    //time elapsed & medium idle & we have never waited for medium access (IDEAL)
+                    if(fullyIdle && !theRF.inUse()) {
                         theRF.transmit(datapck.getFrame());
                             state = WAITING_4_ACK;
                             break;
                     }
-                case WAITING_BACKOFF: //almost always transmit when this is called
-                    //timer elapsed in wait object
+                case WAITING_BACKOFF: //////////////////////////////////////////////////////////////////////////////
                     try {
                         if(LinkLayer.debug ==1) output.println("Starting an ExBackoff CountDown from "+ waiting.getCD());
 
@@ -191,22 +189,22 @@ public class Sender<Final> implements Runnable {
                         setBackoff = false; //WE DON'T WANT TO RERANDOMIZE COUNTDOWN
 
                         if(LinkLayer.debug ==1)output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
-                        if (remainingCountDown != 0) { //Line was in use while waiting backoff go back to waiting 4 med access
+
+                        if (remainingCountDown != 0) { //Line interrupted while waiting backoff go back to waiting 4 med access
                             state = WAITING_4_MED_ACCESS;
                             if(LinkLayer.debug ==1) output.println("CountDown was Interrupted");
                             break;
                         }
+
+                        //WE CAN ACTUALLY TRANSMIT
                         theRF.transmit(datapck.getFrame());
                         state = WAITING_4_ACK;
                         break;
                     } catch (InterruptedException e) {
-                        //medium is accessed elsewhere
-                        //state=WAITING_DIFS;
                         continue;
-                        //break;
                     }
-                case WAITING_4_ACK: //not a wait Object thing but an RF thingy
-                    if((short)datapck.getDest()==-1){
+                case WAITING_4_ACK: ////////////////////////////////////////////////////////////////////////////////
+                    if((short)datapck.getDest()==-1){ //Don't expect an ACK for a broadcast
                         if(LinkLayer.debug==1) output.println("Broadcast was sent.");
                         resetTransmission();
                         state = WAITING_4_DATA;
@@ -214,10 +212,9 @@ public class Sender<Final> implements Runnable {
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
                         if(startT+ LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled ) {
-                            sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                            sendBeacon = true;
                         }
-                        else sendBeacon = false; //if false then we do need to send a Beacon frame
-                        //End if calc beacon
+                        else sendBeacon = false;
                         break;
                     }
                     boolean ackReceived = false;
@@ -243,6 +240,7 @@ public class Sender<Final> implements Runnable {
                     }
                     //long endTime = LinkLayer.getClock();
                     //output.println("took "+ (endTime-startTime) + " millis to get an ack");
+
                     //reset for next ack
                     ackFlag.set(-1);
 
@@ -258,25 +256,30 @@ public class Sender<Final> implements Runnable {
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
                         if(startT+ LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled) {
-                            sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                            sendBeacon = true;
                         }
-                        else sendBeacon = false; //if false then we do need to send a Beacon frame
+                        else sendBeacon = false;
                         break;
-                    //no ACK received - might need to retry and double contention window
+
+                    //no ACK received - need to retry and double contention window
                     } else {
                         if(LinkLayer.debug==1) output.println("Ack not received....need to retry transmission.");
-                        int newWindow = ((waiting.getWindow()+1)*2)-1;
+
+                        //double contention window
+                        int newWindow = ((waiting.getWindow()+1)*2)-1; //a bit of math for formatting
                         if(newWindow> RF.aCWmax) {
                             waiting.setWindow(RF.aCWmax);
                         } else {
                             waiting.setWindow(newWindow);
                         }
 
-                        if(LinkLayer.debug==1)output.println("Doubled Window to "+ waiting.getWindow());
+                        if(LinkLayer.debug==1)output.println("Doubled Window: [0.."+ waiting.getWindow()+ "]");
+
+                        //upkeep
                         retry = true;
                         fullyIdle = false;
                         ++retryAttempts;
-                        //Reached retry limit, reset eveverything
+                        //Reached retry limit, reset everything
                         if (retryAttempts > theRF.dot11RetryLimit) {
                             if(LinkLayer.debug==1) output.println("Retry attempts reached. Discarding packet and resetting backoff window.");
                             resetTransmission();
@@ -288,10 +291,10 @@ public class Sender<Final> implements Runnable {
                         //Calc if send Beacon or not
                         endT = LinkLayer.getClock(); //set the endT to clock and compare to startT
                         if(startT+ LinkLayer.getBeaconBackoff() < endT && LinkLayer.beaconsEnabled) {
-                            sendBeacon = true; //if startT + 2.5 sec is smaller than endT then we dont send a Beacon frame yet
+                            sendBeacon = true;
                         }
-                        else sendBeacon = false; //if false then we do need to send a Beacon frame
-                        //End if calc beacon
+                        else sendBeacon = false;
+
                         break;
 
                     }

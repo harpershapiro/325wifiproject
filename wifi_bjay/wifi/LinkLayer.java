@@ -212,12 +212,6 @@ public class LinkLayer implements Dot11Interface {
 
 	private void recvBeacon(){
 		CRC32 checksum = new CRC32();
-
-		//beacon frames bypass the queue so just directly send one
-//		data = Arrays.copyOfRange(rec_frame,6, (rec_frame.length - Packet.CRC_BYTES)); //grab data from index 6 to len-4
-//		short dest = (short)Packet.extractdest(rec_frame);
-//		output.println("Receiver got a data frame sent for " + dest);
-//		short src = (short)Packet.extractsrc(rec_frame);
 		byte[] data;
 		long ourTime = LinkLayer.getClock();
 		byte[] ourTimes = new byte[8];
@@ -233,13 +227,6 @@ public class LinkLayer implements Dot11Interface {
 
 		long startTime = theRF.clock();
 		for(int i=0;i<numTransmissions;i++) {
-			//transmit a packet without timing
-
-//			theRF.transmit(beacon.getFrame());
-
-			//time the receiving portion
-
-//			System.out.println("Received something i="+i);
 			//Start CRC testing
 			int extractCRC = Packet.extractCRC(rec_frame);
 			byte[] crcBytes = Arrays.copyOfRange(rec_frame,0,rec_frame.length-Packet.CRC_BYTES);
