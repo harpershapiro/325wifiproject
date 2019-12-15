@@ -128,7 +128,7 @@ public class LinkLayer implements Dot11Interface {
 			t.setDestAddr(receipt.getDestAddr());
 			t.setSourceAddr(receipt.getSourceAddr());
 		} catch (InterruptedException e) {
-			if (debug == 1) output.println("Recv call interrupted.");
+			if (debug == 1) output.println("LinkLayer: recv() call interrupted.");
 			status=UNSPECIFIED_ERROR;
 		}
 		output.println(t.getBuf().length);

@@ -44,7 +44,7 @@ public class Receiver implements Runnable {
 
         while(true) {
             duplicateData = false; //we want to make sure  not to deliver duplicates
-            if(LinkLayer.debug==1) output.println("RECV Waiting for packets");
+            if(LinkLayer.debug==1) output.println("Waiting for packets");
             //check if there is some data to receive, sleep for a bit otherwise
             while(!theRF.dataWaiting()){
                 try {
@@ -67,14 +67,14 @@ public class Receiver implements Runnable {
             checksum.update(crcBytes);
             long calcCRC = checksum.getValue();
             int calcCRCint = (int) checksum.getValue();
-            System.out.println("GET calcCRC     :  " +calcCRC);
-            System.out.println("GET calcCRCint  :  " +calcCRCint);
+//            System.out.println("GET calcCRC     :  " +calcCRC);
+//            System.out.println("GET calcCRCint  :  " +calcCRCint);
             if (extractCRC != calcCRCint) {
                 //todo: The CRC's don't match! tell sender
-                if(LinkLayer.debug>=1) output.println("CRC's don't match extractCRC :"+ extractCRC + "\nnew calcCRC :"+calcCRC);
+                if(LinkLayer.debug>=1) output.println("CRC's don't match extractCRC :"+ extractCRC + "\ncalcCRC :"+calcCRC);
             }
             else {
-                if(LinkLayer.debug>=1) output.println("CRC's MATCH!!! calcCRC :"+ calcCRC);
+                if(LinkLayer.debug>=1) output.println("CRC's MATCHED!!! :"+ calcCRC);
             }
             //End CRC check
 
@@ -100,7 +100,7 @@ public class Receiver implements Runnable {
 
                 //If it's an Beacon frame then do beacon related things
                 if (frameType == 2 ) {
-                    if(LinkLayer.debug>=1) output.println("\tGOT BEACON");
+                    if(LinkLayer.debug>=1) output.println("Received a Beacon");
                     //Grab data to get "thereTime" value to compare to our own
                     long thereTime = 0;
                     for (int i = 0; i < data.length; i++) //in theory this loop should only happen 8 times (long = 8 bytes)
@@ -108,16 +108,17 @@ public class Receiver implements Runnable {
                         thereTime = (thereTime << 8) + (data[i] & 0xff); //converting the byte array to a long value
                     }
                     ourTime = LinkLayer.getClock();
-                    if(LinkLayer.debug>=1) output.println("ourTime is      "+ ourTime);
-                    if(LinkLayer.debug>=1) output.println("ThereTime was "+ thereTime);
-                    if(LinkLayer.debug>=1) output.println("Difference : "+ (thereTime - ourTime));
-                    if(LinkLayer.debug>=1 && ourTime > thereTime) output.println("Offset : "+ LinkLayer.getClockOffset()); //todo: remove before final turn in
+//                    if(LinkLayer.debug>=1) output.println("ourTime is      "+ ourTime);
+//                    if(LinkLayer.debug>=1) output.println("ThereTime was "+ thereTime);
+//                    if(LinkLayer.debug>=1) output.println("Difference : "+ (thereTime - ourTime));
+//                    if(LinkLayer.debug>=1 && ourTime > thereTime) output.println("Offset : "+ LinkLayer.getClockOffset()); //todo: remove before final turn in
                     if (ourTime < thereTime) {
-                        if(LinkLayer.debug>=1) output.println("Offset before : "+ LinkLayer.getClockOffset());
+//                        if(LinkLayer.debug>=1) output.println("Offset before : "+ LinkLayer.getClockOffset());
                         LinkLayer.setClockOffset(LinkLayer.getClockOffset() + (thereTime - ourTime));
-                        if(LinkLayer.debug>=1) output.println("Offset : "+ LinkLayer.getClockOffset());
-                        if(LinkLayer.debug>=1) output.println("OurTime changed too "+ thereTime);
+//                        if(LinkLayer.debug>=1) output.println("Offset : "+ LinkLayer.getClockOffset());
+                        if(LinkLayer.debug>=1) output.println("Accepting there time :"+ thereTime);
                     }
+                    else if(LinkLayer.debug>=1) output.println("Not accepting there time");
                 }
                 //End Beacon related things
 

@@ -6,8 +6,11 @@
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/LinkLayer.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Receiver.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Sender.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/325wifiproject/wifi/Wait.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/LinkLayer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Receiver.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Sender.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" beforeDir="false" afterPath="$PROJECT_DIR$/wifi_bjay/wifi/Wait.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,11 +20,6 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="428" />
-    <option name="width" value="1499" />
-    <option name="height" value="1047" />
   </component>
   <component name="PropertiesComponent">
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1575442646428" />

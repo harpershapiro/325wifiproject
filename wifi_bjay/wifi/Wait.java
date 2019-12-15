@@ -87,7 +87,7 @@ public class Wait { //A class with all the wait's we will use for this project
             }
         }
         //ourTime = LinkLayer.getClock();
-        if(LinkLayer.debug >= 1) System.out.println("Waiting Class after SIFS clock = "+ ourTime);
+        if(LinkLayer.debug >= 1) System.out.println("After SIFS clock is :"+ ourTime); //todo: do we remove this or make it on the output in client windows?
         return ourTime; //Return current time (so whom ever called us can update there known time)
     }
 
@@ -107,7 +107,7 @@ public class Wait { //A class with all the wait's we will use for this project
             }
         }
         //ourTime = LinkLayer.getClock();
-        if(LinkLayer.debug >= 1) System.out.println("Waiting Class after DIFS clock = "+ ourTime);
+        if(LinkLayer.debug >= 1) System.out.println("After DIFS clock is :"+ ourTime); //todo: do we remove this or make it on the output in client windows?
         return ourTime; //Return current time (so whom ever called us can update there known time)
         //todo: DIFS = SIFS + 2 windows (aka 2 backoff slots) (done)
     }
@@ -121,11 +121,10 @@ public class Wait { //A class with all the wait's we will use for this project
         int singleSlotTime = theRF.aSlotTime;
         long ourTime = 0;
         //setRanBackoff(); //do this in sender (done)
-        System.out.println("BackOff calc'ed CountDown "+ countDown);
+        System.out.println("BackOff calc'ed CountDown "+ countDown);     //todo: do we remove this or make it on the output in client windows?
         int totalWait = countDown*singleSlotTime; //used for testing
-        //todo: Add if interrupted logic as in save current countDown for later (might happen automatically with --;)
             while(countDown > 0) {
-                System.out.println("sleeping at countdown= "+countDown);
+                System.out.println("sleeping at countdown= "+countDown); //todo: do we remove this or make it on the output in client windows?
                 sleep(singleSlotTime); //wait A slot time amount
                 countDown--;           //then reduce the remaining fake "window" via countDown--
                 if (theRF.inUse()) {
@@ -139,8 +138,8 @@ public class Wait { //A class with all the wait's we will use for this project
                 break;  //break if the clock vlaue ends in a 50 or a 0 (logic should be every 50ish ms windows ie. 50 -> 0 -> 50 -> 0...)
             }
         }
-        //todo: unsure if we return clock or countDown as we need to return countDown if we get intrupted so we dont loose that value
-        if(LinkLayer.debug >= 1) System.out.println("Waiting Class after BackOff clock = "+ ourTime);
+        //unsure if we return clock or countDown as we need to return countDown if we get intrupted so we dont loose that value
+        if(LinkLayer.debug >= 1) System.out.println("After Backoff clock is :"+ ourTime); //todo: do we remove this or make it on the output in client windows?
         return countDown; //Return how long we waited in total
 //        return LinkLayer.getClock(); //Return current time (so whom ever called us can update there known time)
     }

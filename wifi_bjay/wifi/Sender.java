@@ -188,7 +188,7 @@ public class Sender<Final> implements Runnable {
                         int remainingCountDown = waiting.BackoffWindow();
                         setBackoff = false; //WE DON'T WANT TO RERANDOMIZE COUNTDOWN
 
-                        if(LinkLayer.debug ==1)output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
+//                        if(LinkLayer.debug ==1)output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
 
                         if (remainingCountDown != 0) { //Line interrupted while waiting backoff go back to waiting 4 med access
                             state = WAITING_4_MED_ACCESS;
@@ -232,7 +232,7 @@ public class Sender<Final> implements Runnable {
                             int ackseqNum = ackFlag.get();
                             if(ackseqNum==this.seqNum){ //ACK was for us!!!!!!!!!
                                 ackReceived = true;
-                                if(LinkLayer.debug ==1) output.println("Ack " + seqNum + " Received");
+//                                if(LinkLayer.debug ==1) output.println("Ack " + seqNum + " Received");
 
                                 break;
                             }
@@ -246,7 +246,8 @@ public class Sender<Final> implements Runnable {
 
                     //ACK received
                     if(ackReceived) {
-                        if(LinkLayer.debug==1) output.println("ACK RECEIVED");
+//                        if(LinkLayer.debug==1) output.println("ACK RECEIVED");
+                        if(LinkLayer.debug ==1) output.println("Ack " + seqNum + " Received");
                         resetTransmission();
                         waiting.resetWindow();
                         destToSequence.replace(dest,seqNum+1); //increment sequence number
