@@ -11,7 +11,10 @@ import static java.lang.Thread.sleep;
 
 
 public class Sender<Final> implements Runnable {
+    //CONSTANTS
     private final int WAITING_4_DATA = 0, WAITING_4_MED_ACCESS = 1, WAITING_DIFS = 2, WAITING_BACKOFF = 3, WAITING_4_ACK = 4;
+
+    //GLOBALS
     private int mac;
     private boolean retry; //true if we are resending current packet
     private boolean fullyIdle; //true if we have never seen the channel busy during this transmission
@@ -26,6 +29,7 @@ public class Sender<Final> implements Runnable {
     private HashMap<Short,Integer> destToSequence; //maps dest to sequence number
     private AtomicInteger ackFlag; //value of the sequence number of an ack received in receiver thread (shared)
 
+    //BEACON TIMING
     private boolean sendBeacon; //every 100ms or so we make this true and when the current packet ends we send beacon frame before grabbing the next data.
     private long ourTime;
     private long startT;
@@ -75,7 +79,7 @@ public class Sender<Final> implements Runnable {
 
                    //BRAND NEW TRANSMISSION
                     startT = LinkLayer.getClock(); //get the clock as we start a new loop
-                    if(sendBeacon) {
+                    if(sendBeacon & datapck==null) {
                         if(LinkLayer.debug >= 1) output.println("\tCreating A Beacon Frame!!");
                         ourTime = LinkLayer.getClock() + FUDGEFACTOR;
                         byte[] data = new byte[8];
@@ -113,8 +117,7 @@ public class Sender<Final> implements Runnable {
                         }
                         if(sendBeacon) break; //SORRY but we need to go back to the top.
 
-                       //Get some addresses and upkeep sequence number hashmap
-                       //short src = data.getSourceAddr();
+                       //Get address and upkeep sequence number hashmap
                        this.dest = data.getDestAddr();
                        if(!destToSequence.containsKey(dest)){
                            destToSequence.put(dest,0);
@@ -188,9 +191,8 @@ public class Sender<Final> implements Runnable {
                         int remainingCountDown = waiting.BackoffWindow();
                         setBackoff = false; //WE DON'T WANT TO RERANDOMIZE COUNTDOWN
 
-//                        if(LinkLayer.debug ==1)output.println("Remaining CountDown "+ remainingCountDown); //todo: remove output when working as intended
-
-                        if (remainingCountDown != 0) { //Line interrupted while waiting backoff go back to waiting 4 med access
+                        //Line interrupted while waiting backoff go back to waiting 4 medium access
+                        if (remainingCountDown != 0) {
                             state = WAITING_4_MED_ACCESS;
                             if(LinkLayer.debug ==1) output.println("CountDown was Interrupted");
                             break;

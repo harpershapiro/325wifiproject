@@ -67,7 +67,7 @@ public class Packet {
             value = value << 20;
             value = value >>> 20;
 
-        } //sorry brad :^ ] (we had to write this)
+        }
         return value;
     }
 

@@ -8,13 +8,11 @@ import java.util.zip.CRC32;
 
 import rf.RF;
 
-import static java.lang.Thread.sleep;
 
 
 /**
- * Use this layer as a starting point for your project code.  See {@link Dot11Interface} for more
- * details on these routines.
- * @author richards
+ * This is the 802.11~ Link Layer lovingly crafted by:
+ * @author HARPER SHAPIRO & SKYLER LOFTUS
  */
 public class LinkLayer implements Dot11Interface {
 	//CONSTANTS
@@ -57,8 +55,8 @@ public class LinkLayer implements Dot11Interface {
 		this.ourMAC = ourMAC;
 		//settings and streams
 		this.output = output;
-		this.debug=1;
-		this.beaconBackoff = 5000;
+		this.debug=-1;
+		this.beaconBackoff = 10000; //10 second delay default
 		this.beaconsEnabled=true;
 		this.backoffFixed=false;
 		//try to set up RF
@@ -131,7 +129,6 @@ public class LinkLayer implements Dot11Interface {
 			if (debug == 1) output.println("LinkLayer: recv() call interrupted.");
 			status=UNSPECIFIED_ERROR;
 		}
-		output.println(t.getBuf().length);
 		//this buffer contains headers+data. extract data, addresses, crc.
 		return t.getBuf().length; //Does it need to return the length of data or hdr + data? ask brad
 	}
@@ -150,8 +147,8 @@ public class LinkLayer implements Dot11Interface {
 		output.println("LinkLayer: Sending command " + cmd + " with value " + val);
 		if (cmd == 0) {
 			output.println( "Command 1: value = [-1 -> debug output] [0 -> no debug output]" +
-							"\n[Command 2 -> [0 Enable fixed backoff] [1 Enable random backoff]"+
-							"\n[Command 3 -> [<= 0 Disable beacons] [> 0 Enabled beacons, Val is delay in seconds]");
+							"\nCommand 2: [0 Enable fixed backoff] [1 Enable random backoff]"+
+							"\nCommand 3: [<= 0 Disable beacons] [> 0 Enabled beacons, Val is delay in seconds]");
 			output.println("Current settings :\nDebug : "+debug+
 							"\nBeacon enabled/delay :"+beaconsEnabled+"/"+beaconBackoff);
 			//print status
@@ -159,7 +156,7 @@ public class LinkLayer implements Dot11Interface {
 		}
 		else if (cmd == 1) {
 			if (val == -1) {
-				output.println("Full debug output...........activated");
+				output.println("Debug output...........activated");
 				debug = 1;
 			}
 			if (val == 0) {
@@ -188,6 +185,7 @@ public class LinkLayer implements Dot11Interface {
 	}
 
 	//sends beacon frames and determines avg time
+	//RESULT ~2042 ms
 	private void sendingBeacon(){
 		//beacon frames bypass the queue so just directly send one
 		int numTransmissions = 10;
@@ -210,6 +208,8 @@ public class LinkLayer implements Dot11Interface {
 		System.out.println("AVG SENDER beacon transmission time: " + avgTime + "ms");
 	}
 
+	//receives beacon frames and finds average receipt time
+	//RESULT: basically 0 ms
 	private void recvBeacon(){
 		CRC32 checksum = new CRC32();
 		byte[] data;
@@ -243,7 +243,6 @@ public class LinkLayer implements Dot11Interface {
 			short src = (short)Packet.extractsrc(rec_frame);
 			if(dest==(short)ourMAC | dest==-1) {
 				if (frameType == 2 ) {
-					//todo: Grab data to get "thereTime" value to compare to our own
 					long thereTime = 0;
 					for (int j = 0; j < data.length; j++) //in theory this loop should only happen 8 times (long = 8 bytes)
 					{
@@ -264,18 +263,34 @@ public class LinkLayer implements Dot11Interface {
 
 	}
 
+	/**
+	 * Adjusted clock time
+	 * @return time
+	 */
 	public static long getClock() {
 		return theRF.clock() + clockOffset.get();
 	}
 
+	/**
+	 * Sets offset for Link layer
+	 * @param n
+	 */
 	public static void setClockOffset(long n) {
 		clockOffset.set(n);
 	}
 
+	/**
+	 * Gets offset for link layer time
+	 * @return offset
+	 */
 	public static long getClockOffset() {
 		return clockOffset.get();
 	}
 
+	/**
+	 * Gets amount of time between beacons
+	 * @return amount of time
+	 */
 	public static int getBeaconBackoff() {
 		return beaconBackoff;
 	}
